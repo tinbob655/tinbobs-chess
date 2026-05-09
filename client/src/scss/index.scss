@@ -1,0 +1,9 @@
+@use './variables.scss' as vars;
+
+@use './image.scss';
+@use './footer.scss';
+
+
+body {
+    background-image: linear-gradient(vars.$bg-primary, vars.$bg-secondary);
+}

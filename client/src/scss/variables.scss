@@ -1,0 +1,43 @@
+
+
+//colours
+$color-navy:          #1C2B45;   
+$color-navy-light:    #2E4270;   
+$color-gold:          #B8963A;   
+$color-gold-light:    #D4AF5C;   
+$color-cream:         #F2EAD8;   
+$color-white:         #FFFFFF;   
+
+
+//backgrounds
+$bg-primary:          $color-navy;       
+$bg-secondary:        $color-navy-light; 
+$bg-surface:          $color-cream;      
+$bg-overlay:          rgba(#1C2B45, 0.75); 
+
+//text
+$text-primary:        $color-cream;      
+$text-secondary:      $color-gold-light; 
+$text-on-light:       $color-navy;       
+$text-muted:          rgba(#F2EAD8, 0.55); 
+
+//accents
+$accent-primary:      $color-gold;       
+$accent-hover:        $color-gold-light; 
+$accent-border:       rgba(#B8963A, 0.4); 
+
+//chessboard
+$board-light-square:  #F0D9B5;           
+$board-dark-square:   $color-navy;       
+$board-highlight:     rgba(#D4AF5C, 0.5); 
+$board-border-colour:        $color-gold;  
+
+//border
+$border-gold:         1px solid $color-gold;
+$border-gold-thick:   2px solid $color-gold;
+$border-navy:         1px solid $color-navy-light;
+
+//shadows
+$shadow-sm:   0 2px 6px rgba(#1C2B45, 0.3);
+$shadow-md:   0 4px 16px rgba(#1C2B45, 0.45);
+$shadow-gold: 0 0 12px rgba(#B8963A, 0.35);   

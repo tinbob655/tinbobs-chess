@@ -1,0 +1,15 @@
+img {
+
+    max-height: 50vh;
+    max-width: 50vw;
+
+    &.centred {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    &.rounded {
+        border-radius: 50%;
+    }
+}
