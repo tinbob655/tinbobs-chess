@@ -1,22 +1,21 @@
 package com.tinbobs.chess.server.engine;
 
 
-import com.tinbobs.chess.server.controller.GameController;
 import com.tinbobs.chess.server.model.board.Board;
 import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
+import com.tinbobs.chess.server.service.MoveParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-@Service
+
 public final class GameEngine implements Engine_API {
 
     private GameState state;
@@ -27,18 +26,8 @@ public final class GameEngine implements Engine_API {
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    private GameController controller;
+    private MoveParser moveParser;
 
-    public GameEngine() {
-
-        //create a board
-        Board board = new Board();
-
-        //TODO: ADD PIECES TO THE BOARD
-
-        //create a game state
-        this.state = this.recomputeState(board);
-    }
 
     public void startGame() {
 
@@ -47,13 +36,18 @@ public final class GameEngine implements Engine_API {
             throw new IllegalStateException("Cannot start the game without two players");
         }
 
+        //create a board
+        Board board = new Board();
+
+        //TODO: ADD PIECES TO THE BOARD
+
+        //create a game state
+        this.state = this.recomputeState(board);
+
         //need to run on a separate thread to do blocking
         CompletableFuture.runAsync(() -> {
             while (!this.state.isGameOver()) {
                 this.turn();
-
-                //send state to frontend
-                messagingTemplate.convertAndSend("/topic/game", this.state);
             }
         });
     }
@@ -83,7 +77,7 @@ public final class GameEngine implements Engine_API {
 
         //do the move
         this.state = this.advance(move);
-        this.controller.sendMove(move);
+        this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
     }
 
     private GameState advance(Move move) {

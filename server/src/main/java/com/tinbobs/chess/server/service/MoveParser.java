@@ -15,8 +15,8 @@ public class MoveParser {
         String from = raw.from();
         String to = raw.to();
 
-        Position fromPos = new Position(from.charAt(0), from.charAt(1));
-        Position toPos = new Position(to.charAt(0), to.charAt(1));
+        Position fromPos = new Position(from.charAt(0), Character.getNumericValue(from.charAt(1)));
+        Position toPos = new Position(to.charAt(0), Character.getNumericValue(to.charAt(1)));
 
         return new Move(fromPos, toPos, raw.playerName());
     }
