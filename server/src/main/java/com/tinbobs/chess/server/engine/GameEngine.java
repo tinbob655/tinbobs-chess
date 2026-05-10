@@ -1,9 +1,11 @@
-package engine;
+package com.tinbobs.chess.server.engine;
 
 
-import model.player.Player;
-import model.state.GameState;
-import model.state.Move;
+import com.tinbobs.chess.server.model.player.Player;
+import com.tinbobs.chess.server.model.state.GameState;
+import com.tinbobs.chess.server.model.state.Move;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,25 +13,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-//SINGLETON
 @Service
 public class GameEngine implements Engine_API {
 
-    private static GameEngine instance;
-    private GameState state;
+    private GameState state = new GameState();
     private final List<Player> players = new ArrayList<>();
     private int turnIndex = 0;
 
-    private GameEngine() {};
-
-    public static GameEngine getInstance() {
-
-        if (instance == null) {
-            instance = new GameEngine();
-        }
-
-        return instance;
-    }
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     public void startGame() {
 
@@ -39,7 +31,7 @@ public class GameEngine implements Engine_API {
                 this.turn();
 
                 //send state to frontend
-                
+                messagingTemplate.convertAndSend("/topic/game", this.state);
             }
         });
     }
@@ -65,6 +57,9 @@ public class GameEngine implements Engine_API {
 
         //do the move
         this.state = this.advance(move);
+
+        //increment turn
+        this.turnIndex = (this.turnIndex + 1) % this.players.size();
     }
 
     private GameState advance(Move move) {

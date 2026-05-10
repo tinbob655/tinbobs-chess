@@ -1,8 +1,8 @@
-package model.player;
+package com.tinbobs.chess.server.model.player;
 
-import model.board.Colour;
-import model.state.GameState;
-import model.state.Move;
+import com.tinbobs.chess.server.model.board.Colour;
+import com.tinbobs.chess.server.model.state.GameState;
+import com.tinbobs.chess.server.model.state.Move;
 
 public abstract class Player {
 

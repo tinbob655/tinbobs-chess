@@ -12,6 +12,7 @@ interface res {
     connected: boolean;
     botMove: Move|null;
     sendMove(from: string, to: string):void;
+    startGame():void;
 }
 
 export function useChessSocket():res {
@@ -49,12 +50,20 @@ export function useChessSocket():res {
     }, []);
 
     //other components will call this to send a human move to the backend
-    function sendMove(from: string, to: string) {
+    function sendMove(from: string, to: string):void {
         clientRef.current?.publish({
             destination: '/app/move',
             body: JSON.stringify({ from, to, player: 'white' }),    //the human always plays as white
         });
     }
 
-    return { connected, botMove, sendMove };
+    //start the game
+    function startGame():void {
+        clientRef.current?.publish({
+            destination: '/app/start',
+            body: '',
+        });
+    }
+
+    return { connected, botMove, sendMove, startGame };
 }
