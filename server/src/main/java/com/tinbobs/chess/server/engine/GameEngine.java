@@ -1,6 +1,9 @@
 package com.tinbobs.chess.server.engine;
 
 
+import com.tinbobs.chess.server.controller.GameController;
+import com.tinbobs.chess.server.model.board.Board;
+import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
@@ -14,16 +17,35 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @Service
-public class GameEngine implements Engine_API {
+public final class GameEngine implements Engine_API {
 
-    private GameState state = new GameState();
+    private GameState state;
     private final List<Player> players = new ArrayList<>();
     private int turnIndex = 0;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private GameController controller;
+
+    public GameEngine() {
+
+        //create a board
+        Board board = new Board();
+
+        //TODO: ADD PIECES TO THE BOARD
+
+        //create a game state
+        this.state = this.recomputeState(board);
+    }
+
     public void startGame() {
+
+        //do not start if we don't have 2 players
+        if (this.players.size() != 2) {
+            throw new IllegalStateException("Cannot start the game without two players");
+        }
 
         //need to run on a separate thread to do blocking
         CompletableFuture.runAsync(() -> {
@@ -41,7 +63,11 @@ public class GameEngine implements Engine_API {
     }
 
     public void addPlayer(Player player) {
-        this.players.add(player);
+
+        //refuse to add more than 2 players
+        if (this.players.size() < 2) {
+            this.players.add(player);
+        }
     }
 
     public void turn() {
@@ -57,12 +83,25 @@ public class GameEngine implements Engine_API {
 
         //do the move
         this.state = this.advance(move);
-
-        //increment turn
-        this.turnIndex = (this.turnIndex + 1) % this.players.size();
+        this.controller.sendMove(move);
     }
 
     private GameState advance(Move move) {
-        return null;
+
+        //update the board
+        Board board = this.state.board();
+        Piece p = board.getPieceAt(move.from()).orElseThrow();
+        board.removePieceAt(move.from());
+        board.setPieceAt(move.to(), p);
+
+        //increment the turn
+        this.turnIndex = (this.turnIndex + 1) % this.players.size();
+
+        //recompute and return state
+        return this.recomputeState(board);
+    }
+
+    private GameState recomputeState(Board board) {
+        return new GameState(board, this.players.get(this.turnIndex));
     }
 }

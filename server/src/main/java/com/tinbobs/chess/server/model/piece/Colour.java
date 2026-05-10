@@ -1,4 +1,4 @@
-package com.tinbobs.chess.server.model.board;
+package com.tinbobs.chess.server.model.piece;
 
 public enum Colour {
     WHITE,

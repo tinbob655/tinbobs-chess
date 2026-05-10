@@ -1,7 +1,7 @@
 package com.tinbobs.chess.server.config;
 
 import com.tinbobs.chess.server.engine.GameEngine;
-import com.tinbobs.chess.server.model.board.Colour;
+import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.player.Bot;
 import com.tinbobs.chess.server.model.player.Human;
 import org.springframework.context.annotation.Bean;

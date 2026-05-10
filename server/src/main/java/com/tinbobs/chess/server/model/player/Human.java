@@ -1,9 +1,9 @@
 package com.tinbobs.chess.server.model.player;
 
-import com.tinbobs.chess.server.model.board.Colour;
+import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
-import org.springframework.stereotype.Service;
+
 import java.util.concurrent.CompletableFuture;
 
 
