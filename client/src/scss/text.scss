@@ -1,0 +1,64 @@
+@use './variables.scss' as vars;
+@import url('https://fonts.googleapis.com/css2?family=Alkatra:wght@400..700&family=Donegal+One&display=swap');
+
+h1 {
+    color: vars.$text-primary;
+    font-family: "Donegal One";
+    font-size: 40px;
+    font-weight: bolder;
+}
+
+h2 {
+    color: vars.$text-primary;
+    opacity: 0.85;
+    font-family: "Donegal One";
+    font-size: 30px;
+    font-family: 100;
+}
+
+h3 {
+    color: vars.$text-secondary;
+    font-family: "Alkatra";
+    font-size: 25px;
+    max-width: 85vw;
+    
+    cursor: pointer;
+    transition-property: transform;
+    transition-duration: 0.5s;
+    transition-timing-function: ease;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+}
+
+p {
+    color: vars.$text-secondary;
+    font-family: "Alkatra";
+    font-size: 20px;
+    font-weight: 100;
+}
+
+h1, h2, h3, p {
+
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+
+    $closestMargin: 2%;
+
+    &.alignLeft {
+        margin-left: $closestMargin;
+        margin-right: auto;
+        text-align: left;
+        transform-origin: left;
+    }
+
+    &.alignRight {
+        margin-right: $closestMargin;
+        margin-left: auto;
+        text-align: right;
+        transform-origin: right;
+    }
+}
