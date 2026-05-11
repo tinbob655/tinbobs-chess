@@ -42,6 +42,7 @@ export function useChessSocket():socketInfo {
 
                     const result: MoveResult = JSON.parse(message.body);
                     const pending = pendingMoves.current.get(result.correlationID);
+                    console.log(pending);
 
                     if (pending) {
                         if (result.valid) {
@@ -77,10 +78,10 @@ export function useChessSocket():socketInfo {
 
             const correlationId = crypto.randomUUID();
             pendingMoves.current.set(correlationId, { resolve, reject });
-            
+
             clientRef.current?.publish({
                 destination: '/app/move',
-                body: JSON.stringify({ from, to, player: 'white' }), //the human always plays as white
+                body: JSON.stringify({ from, to, player: 'white', correlationID: correlationId }), //the human always plays as white
             });
         });
     }
