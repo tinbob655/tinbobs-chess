@@ -1,5 +1,4 @@
 import React, {useRef, useState, useEffect} from 'react';
-import PageHeader from '../multiPageComponents/pageHeader';
 import { useChessSocket } from '../../hooks/useChessSocket';
 import ChessBoard from './chessBoard';
 
@@ -19,6 +18,7 @@ export default function Home():React.ReactElement {
 
     const [board, setBoard] = useState<BoardState>([]);
     const [selectedSquare, setSelectedSquare] = useState<string|null>(null);
+    const [invalidMoveMessage, setInvalidMoveMessage] = useState<string>('');
 
 
     //create a default board on page load
@@ -38,8 +38,6 @@ export default function Home():React.ReactElement {
 
     return (
         <React.Fragment>
-            <PageHeader title="Tinbob's Chess" subtitle="Anonymously declared top #1 chess websites worldwide" />
-
             <div id="playNowWrapper" ref={playNowWrapper}>
                 <button id="playNowButton" className={connected ? '' : "greyed"} onClick={playButtonClicked}>
                     <h3 id="playNowText" className={`noVerticalSpacing ${connected ? '' : "greyed"}`} style={{transform: 'unset'}}>
@@ -51,6 +49,9 @@ export default function Home():React.ReactElement {
             <div id="chessBoardWrapper">
                 {connected ? (
                     <React.Fragment>
+                        <p>
+                            {invalidMoveMessage}
+                        </p>
 
                         {/*CHESS BOARD*/}
                         <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} />
@@ -93,27 +94,35 @@ export default function Home():React.ReactElement {
     }
 
     //fires when the user clicks a square in the chess board
-    async function squareClicked(square:string):Promise<void> {
+    async function squareClicked(square: string): Promise<void> {
 
+        setInvalidMoveMessage('');
+
+        //the user wants to use the clicked square to make a move
         if (selectedSquare) {
 
-            //the user wants to move the selected piece here
-            const move:Move = {
-                from: selectedSquare,
-                to: square,
-                playerName: '', //don't need to care about a player name
-            }
-
-            const newBoard = applyMove(board, move);
-            sendMove(move.from, move.to);
-            setBoard(newBoard);
-
+            const move: Move = { from: selectedSquare, to: square, playerName: '' };
             setSelectedSquare(null);
-        }
-        else {
+    
+            //attempt to run the move on the backend
+            sendMove(move.from, move.to)
 
-            //the user has chosen this piece to move
+                //backend was happy with the move
+                .then(() => {
+                    setBoard(prev => applyMove(prev, move));
+                })
+
+                //backend rejected the move
+                .catch((reason: string) => {
+                    console.warn('Move rejected:', reason);
+                    setInvalidMoveMessage("Invalid move!");
+                });
+    
+        }
+
+        //the user has selected this square as the first part of their move
+        else {
             setSelectedSquare(square);
-        };
-    };
+        }
+    }
 };

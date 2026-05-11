@@ -5,12 +5,22 @@ import SockJS from 'sockjs-client';
 import type socketInfo from '../types/socketInfo';
 import type Move from '../types/move';
 
+
+interface MoveResult {
+    valid: boolean;
+    correlationID: string;
+    reason: string | null;
+};
+
 export function useChessSocket():socketInfo {
 
 
     const clientRef = useRef<Client|null>(null);
+    const pendingMoves = useRef<Map<string, { resolve: () => void; reject: (reason: string) => void }>>(new Map());
+
     const [botMove, setBotMove] = useState<Move|null>(null);
     const [connected, setConnected] = useState(false);
+
 
 
     //creates a STOMP client
@@ -20,12 +30,32 @@ export function useChessSocket():socketInfo {
 
             onConnect: () => {
                 setConnected(true);
-                console.log('Connected to server...');
 
-                //listen to /topic/game
+                //listen for bot moves
                 client.subscribe('/topic/game', (message) => {
-                    const move:Move = JSON.parse(message.body);
+                    const move: Move = JSON.parse(message.body);
                     setBotMove(move);
+                });
+
+                //listen for the result of backend move validation
+                client.subscribe('/topic/moveResult', (message) => {
+
+                    const result: MoveResult = JSON.parse(message.body);
+                    const pending = pendingMoves.current.get(result.correlationID);
+
+                    if (pending) {
+                        if (result.valid) {
+
+                            //the move we submitted was valid
+                            pending.resolve();
+                        }
+                        else {
+
+                            //the move we submitted was invalid
+                            pending.reject(result.reason ?? 'Invalid move');
+                        }
+                        pendingMoves.current.delete(result.correlationID);
+                    }
                 });
             },
 
@@ -34,16 +64,24 @@ export function useChessSocket():socketInfo {
 
         client.activate();
         clientRef.current = client;
+        return () => {
+            client.deactivate();
+        };
 
-        //clean stuff up on dismount
-        return () => { client.deactivate(); };
     }, []);
 
+
     //other components will call this to send a human move to the backend
-    function sendMove(from: string, to: string):void {
-        clientRef.current?.publish({
-            destination: '/app/move',
-            body: JSON.stringify({ from, to, player: 'white' }),    //the human always plays as white
+    function sendMove(from: string, to: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+
+            const correlationId = crypto.randomUUID();
+            pendingMoves.current.set(correlationId, { resolve, reject });
+            
+            clientRef.current?.publish({
+                destination: '/app/move',
+                body: JSON.stringify({ from, to, player: 'white' }), //the human always plays as white
+            });
         });
     }
 

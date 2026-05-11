@@ -30,6 +30,6 @@ public class MoveParser {
         String fromStr = from.toString();
         String toStr = to.toString();
 
-        return new RawMove(fromStr, toStr, move.playerName());
+        return new RawMove(fromStr, toStr, move.playerName(), null);
     }
 }

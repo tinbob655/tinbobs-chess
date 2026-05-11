@@ -3,6 +3,6 @@ import type Move from "./move";
 export default interface socketInfo {
     connected: boolean;
     botMove: Move|null;
-    sendMove (from: string, to: string):void;
+    sendMove (from: string, to: string):Promise<void>;
     startGame():void;
 }
