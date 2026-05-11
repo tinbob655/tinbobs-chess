@@ -22,7 +22,10 @@ public record GameState(Board board, Player currentTurn) {
             Position pos = new Position(x, yInt);
 
             board.getPieceAt(pos).ifPresent(piece -> {
-                res.addAll(piece.getLegalMoves(pos, board));
+
+                if (piece.getColour() == currentTurn.getColour()) {
+                    res.addAll(piece.getLegalMoves(pos, board));
+                }
             });
         }
 
