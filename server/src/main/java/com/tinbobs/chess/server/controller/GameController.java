@@ -30,12 +30,16 @@ public class GameController {
     //start the game when told
     @MessageMapping("/start")
     public void startGame() {
+        System.out.println("Game start signal received");
         gameEngine.startGame();
     }
 
     //move received from frontend
     @MessageMapping("/move")
     public void handleMove(RawMove raw) {
+
+        //log receipt of the move
+        System.out.println("Move received: " + raw.from() + "->" + raw.to());
         try {
             Move move = moveParser.toMove(raw);
             humanPlayer.submitMove(move);
