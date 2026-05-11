@@ -61,4 +61,8 @@ h1, h2, h3, p {
         text-align: right;
         transform-origin: right;
     }
+
+    &.alignLeft, &.alignRight {
+        max-width: 66vw;
+    }
 }

@@ -3,10 +3,31 @@
 @use './image.scss';
 @use './footer.scss';
 @use './text.scss';
+@use './playNow.scss';
 
 
 body {
     background-image: linear-gradient(vars.$bg-primary, vars.$bg-secondary);
+    width: 100vw;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+a {
+
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: transparent;
+    border: none;
+    padding: 0;
 }
 
 div {
@@ -24,4 +45,11 @@ div {
         height: 5px;
         background-color: vars.$color-gold-light;
     }
+}
+
+.noVerticalSpacing {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }
