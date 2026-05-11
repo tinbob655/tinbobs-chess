@@ -65,4 +65,11 @@ h1, h2, h3, p {
     &.alignLeft, &.alignRight {
         max-width: 66vw;
     }
+
+    &.code {
+        font-family: monospace;
+        font-weight: 100;
+        color: #d4d4d4;
+        opacity: 0.85;
+    }
 }

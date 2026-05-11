@@ -1,0 +1,29 @@
+@use './variables.scss' as vars;
+
+table#board {
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: vars.$border-gold-thick;
+    box-shadow: vars.$shadow-gold;
+    margin: 0 auto;
+    width: min(80vh, 80vw);
+    aspect-ratio: 1;
+}
+
+td.cell {
+    text-align: center;
+    vertical-align: middle;
+    font-size: 3rem;
+    cursor: pointer;
+    user-select: none;
+    transition-property: background-color;
+    transition-duration: 0.15s;
+    transition-timing-function: ease;
+}
+
+div.chessCell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
