@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, { useState, useEffect} from 'react';
 import { useChessSocket } from '../../hooks/useChessSocket';
 import ChessBoard from './chessBoard';
 
@@ -14,8 +14,6 @@ export default function Home():React.ReactElement {
 
     const {connected, botMove, sendMove, startGame}:socketInfo = useChessSocket();
 
-    const playNowWrapper = useRef<HTMLDivElement>(null);
-
     const [board, setBoard] = useState<BoardState>([]);
     const [selectedSquare, setSelectedSquare] = useState<string|null>(null);
     const [invalidMoveMessage, setInvalidMoveMessage] = useState<string>('');
@@ -23,8 +21,17 @@ export default function Home():React.ReactElement {
 
     //create a default board on page load
     useEffect(() => {
+
         setBoard(createDefaultBoard());
     }, []);
+
+    //when we are connected, start the game
+    useEffect(() => {
+
+        if (connected) {
+            startGame();
+        }
+    }, [connected]);
 
     //when a bot moves, apply the move
     useEffect(() => {
@@ -38,13 +45,7 @@ export default function Home():React.ReactElement {
 
     return (
         <React.Fragment>
-            <div id="playNowWrapper" ref={playNowWrapper}>
-                <button id="playNowButton" className={connected ? '' : "greyed"} onClick={playButtonClicked}>
-                    <h3 id="playNowText" className={`noVerticalSpacing ${connected ? '' : "greyed"}`} style={{transform: 'unset'}}>
-                        Play some chess!
-                    </h3>
-                </button>
-            </div>
+
 
             <div id="chessBoardWrapper">
                 {connected ? (
@@ -79,19 +80,6 @@ export default function Home():React.ReactElement {
             </div>
         </React.Fragment>
     );
-
-
-    //fires when the user clicks the play button
-    async function playButtonClicked():Promise<void> {
-
-        if (!connected) return;
-
-        //hide the play button and the connected message
-        playNowWrapper.current?.classList.add('hidden');
-
-        //start the game
-        startGame();
-    }
 
     //fires when the user clicks a square in the chess board
     async function squareClicked(square: string): Promise<void> {
