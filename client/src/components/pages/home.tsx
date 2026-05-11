@@ -1,11 +1,39 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import PageHeader from '../multiPageComponents/pageHeader';
+import { useChessSocket } from '../../hooks/useChessSocket';
 import ChessBoard from './chessBoard';
+
+import applyMove from '../../functions/applyMove';
+import createDefaultBoard from '../../functions/createDefaultBoard';
+
+import type { BoardState } from '../../types/chessObjects';
+import type socketInfo from '../../types/socketInfo';
+import type Move from '../../types/move';
 
 
 export default function Home():React.ReactElement {
 
-    const playNowWrapper:React.RefObject<HTMLDivElement | null> = useRef<HTMLDivElement>(null);
+    const {connected, botMove, sendMove, startGame}:socketInfo = useChessSocket();
+
+    const playNowWrapper = useRef<HTMLDivElement>(null);
+
+    const [board, setBoard] = useState<BoardState>([]);
+    const [selectedSquare, setSelectedSquare] = useState<string|null>(null);
+
+
+    //create a default board on page load
+    useEffect(() => {
+        setBoard(createDefaultBoard());
+    }, []);
+
+    //when a bot moves, apply the move
+    useEffect(() => {
+
+        if (!botMove) return;
+
+        const newBoard = applyMove(board, botMove);
+        setBoard(newBoard);
+    }, [botMove]);
 
 
     return (
@@ -13,15 +41,29 @@ export default function Home():React.ReactElement {
             <PageHeader title="Tinbob's Chess" subtitle="Anonymously declared top #1 chess websites worldwide" />
 
             <div id="playNowWrapper" ref={playNowWrapper}>
-                <button id="playNowButton" onClick={playButtonClicked}>
-                    <h3 className="noVerticalSpacing" style={{transform: 'unset'}}>
+                <button id="playNowButton" className={connected ? '' : "greyed"} onClick={playButtonClicked}>
+                    <h3 id="playNowText" className={`noVerticalSpacing ${connected ? '' : "greyed"}`} style={{transform: 'unset'}}>
                         Play some chess!
                     </h3>
                 </button>
             </div>
 
             <div id="chessBoardWrapper">
-                <ChessBoard />
+                {connected ? (
+                    <React.Fragment>
+
+                        {/*CHESS BOARD*/}
+                        <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} />
+                    </React.Fragment>
+                ) : (
+                    <React.Fragment>
+                        
+                        {/*will display if not connected to backend*/}
+                        <p className="code">
+                            Awaiting connection from engine...
+                        </p>
+                    </React.Fragment>
+                )}
             </div>
 
             <div className="dividerLine"></div>
@@ -37,11 +79,41 @@ export default function Home():React.ReactElement {
         </React.Fragment>
     );
 
+
+    //fires when the user clicks the play button
     async function playButtonClicked():Promise<void> {
 
-        //hide the play button
+        if (!connected) return;
+
+        //hide the play button and the connected message
         playNowWrapper.current?.classList.add('hidden');
 
         //start the game
+        startGame();
     }
-}
+
+    //fires when the user clicks a square in the chess board
+    async function squareClicked(square:string):Promise<void> {
+
+        if (selectedSquare) {
+
+            //the user wants to move the selected piece here
+            const move:Move = {
+                from: selectedSquare,
+                to: square,
+                playerName: '', //don't need to care about a player name
+            }
+
+            const newBoard = applyMove(board, move);
+            sendMove(move.from, move.to);
+            setBoard(newBoard);
+
+            setSelectedSquare(null);
+        }
+        else {
+
+            //the user has chosen this piece to move
+            setSelectedSquare(square);
+        };
+    };
+};

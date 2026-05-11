@@ -2,20 +2,10 @@ import {useEffect, useRef, useState} from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-interface Move {
-    from: string;
-    to: string;
-    playerName: string;
-}
+import type socketInfo from '../types/socketInfo';
+import type Move from '../types/move';
 
-interface res {
-    connected: boolean;
-    botMove: Move|null;
-    sendMove(from: string, to: string):void;
-    startGame():void;
-}
-
-export function useChessSocket():res {
+export function useChessSocket():socketInfo {
 
 
     const clientRef = useRef<Client|null>(null);
