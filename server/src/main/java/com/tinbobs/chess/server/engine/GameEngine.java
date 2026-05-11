@@ -1,6 +1,7 @@
 package com.tinbobs.chess.server.engine;
 
 
+import com.tinbobs.chess.server.model.IllegalMoveException;
 import com.tinbobs.chess.server.model.board.Board;
 import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.player.Player;
@@ -39,8 +40,6 @@ public final class GameEngine implements Engine_API {
         //create a board
         Board board = new Board();
 
-        //TODO: ADD PIECES TO THE BOARD
-
         //create a game state
         this.state = this.recomputeState(board);
 
@@ -72,7 +71,7 @@ public final class GameEngine implements Engine_API {
         //validate the move
         Set<Move> validMoves = this.state.getLegalMoves();
         if (!validMoves.contains(move)) {
-            throw new IllegalArgumentException("Illegal move");
+            throw new IllegalMoveException(move);
         }
 
         //do the move

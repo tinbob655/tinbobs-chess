@@ -9,10 +9,12 @@ public abstract class Player {
 
     private final String name;
     private final Colour colour;
+    private int score;
 
     public Player(String name, Colour colour) {
         this.name = name;
         this.colour = colour;
+        this.score = 0;
     }
 
     public String getName() {
@@ -20,6 +22,13 @@ public abstract class Player {
     }
     public Colour getColour() {
         return this.colour;
+    }
+    public int getScore() {
+        return this.score;
+    }
+
+    public void capture(Piece piece) {
+        this.score += piece.getValue();
     }
 
     //abstract methods players must implement

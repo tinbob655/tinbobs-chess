@@ -1,6 +1,6 @@
 package com.tinbobs.chess.server.model.board;
 
-import com.tinbobs.chess.server.model.piece.Piece;
+import com.tinbobs.chess.server.model.piece.*;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -8,6 +8,42 @@ import java.util.*;
 public final class Board {
 
     private final List<Optional<Piece>> grid = new ArrayList<>(Collections.nCopies(64, Optional.empty()));
+
+
+    //create a board with default chess pieces
+    public Board() {
+
+        //need to place pieces on the boar
+        //black pieces
+        grid.set(0, Optional.of(new Rook(Colour.BLACK)));
+        grid.set(1, Optional.of(new Knight(Colour.BLACK)));
+        grid.set(2, Optional.of(new Bishop(Colour.BLACK)));
+        grid.set(3, Optional.of(new King(Colour.BLACK)));
+        grid.set(4, Optional.of(new Queen(Colour.BLACK)));
+        grid.set(5, Optional.of(new Bishop(Colour.BLACK)));
+        grid.set(6, Optional.of(new Knight(Colour.BLACK)));
+        grid.set(7, Optional.of(new Rook(Colour.BLACK)));
+
+        //black pawns
+        for (int cell = 8; cell < 16; cell++) {
+            grid.set(cell, Optional.of(new Pawn(Colour.BLACK)));
+        }
+
+        //white pieces
+        grid.set(56, Optional.of(new Rook(Colour.WHITE)));
+        grid.set(57, Optional.of(new Knight(Colour.WHITE)));
+        grid.set(58, Optional.of(new Bishop(Colour.WHITE)));
+        grid.set(59, Optional.of(new King(Colour.WHITE)));
+        grid.set(60, Optional.of(new Queen(Colour.WHITE)));
+        grid.set(61, Optional.of(new Bishop(Colour.WHITE)));
+        grid.set(62, Optional.of(new Knight(Colour.WHITE)));
+        grid.set(63, Optional.of(new Rook(Colour.WHITE)));
+
+        //white pawns
+        for (int cell = 48; cell < 56; cell++) {
+            grid.set(cell, Optional.of(new Pawn(Colour.WHITE)));
+        }
+    };
 
     public int size() {
         return this.grid.size();
