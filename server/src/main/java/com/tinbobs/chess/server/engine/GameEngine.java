@@ -65,7 +65,7 @@ public final class GameEngine implements Engine_API {
 
     public void turn() {
 
-        Player currentPlayer = this.players.get(this.turnIndex);
+        Player currentPlayer = this.currentTurn();
         Move move = currentPlayer.turn(this.state);
 
         //validate the move
@@ -78,6 +78,10 @@ public final class GameEngine implements Engine_API {
         this.state = this.advance(move);
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
     }
+    
+    private Player currentTurn() {
+        return this.players.get(this.turnIndex);
+    }
 
     private GameState advance(Move move) {
 
@@ -85,6 +89,10 @@ public final class GameEngine implements Engine_API {
         Board board = this.state.board();
         Piece p = board.getPieceAt(move.from()).orElseThrow();
         board.removePieceAt(move.from());
+        
+        //if there is a piece at the target location then this is a capture move
+        board.getPieceAt(move.to()).ifPresent(piece -> this.currentTurn().capture(piece));
+
         board.setPieceAt(move.to(), p);
 
         //increment the turn
@@ -95,6 +103,6 @@ public final class GameEngine implements Engine_API {
     }
 
     private GameState recomputeState(Board board) {
-        return new GameState(board, this.players.get(this.turnIndex));
+        return new GameState(board, this.currentTurn());
     }
 }
