@@ -50,7 +50,7 @@ export default function Home():React.ReactElement {
             <div id="chessBoardWrapper">
                 {connected ? (
                     <React.Fragment>
-                        <p>
+                        <p style={{height: '20px'}}>
                             {invalidMoveMessage}
                         </p>
 
