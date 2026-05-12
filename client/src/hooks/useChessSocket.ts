@@ -34,7 +34,11 @@ export function useChessSocket():socketInfo {
                 //listen for bot moves
                 client.subscribe('/topic/game', (message) => {
                     const move: Move = JSON.parse(message.body);
-                    setBotMove(move);
+
+                    //only for bot moves
+                    if (move.playerName !== 'Player') {
+                        setBotMove(move);
+                    }
                 });
 
                 //listen for the result of backend move validation
