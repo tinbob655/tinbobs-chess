@@ -38,8 +38,7 @@ export default function Home():React.ReactElement {
 
         if (!botMove) return;
 
-        const newBoard = applyMove(board, botMove);
-        setBoard(newBoard);
+        setBoard(prev => applyMove(prev, botMove));
     }, [botMove]);
 
 
