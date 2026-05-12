@@ -14,34 +14,34 @@ public final class Board {
     public Board() {
 
         //need to place pieces on the boar
-        //black pieces
-        grid.set(0, Optional.of(new Rook(Colour.BLACK)));
-        grid.set(1, Optional.of(new Knight(Colour.BLACK)));
-        grid.set(2, Optional.of(new Bishop(Colour.BLACK)));
-        grid.set(3, Optional.of(new King(Colour.BLACK)));
-        grid.set(4, Optional.of(new Queen(Colour.BLACK)));
-        grid.set(5, Optional.of(new Bishop(Colour.BLACK)));
-        grid.set(6, Optional.of(new Knight(Colour.BLACK)));
-        grid.set(7, Optional.of(new Rook(Colour.BLACK)));
-
-        //black pawns
-        for (int cell = 8; cell < 16; cell++) {
-            grid.set(cell, Optional.of(new Pawn(Colour.BLACK)));
-        }
-
         //white pieces
-        grid.set(56, Optional.of(new Rook(Colour.WHITE)));
-        grid.set(57, Optional.of(new Knight(Colour.WHITE)));
-        grid.set(58, Optional.of(new Bishop(Colour.WHITE)));
-        grid.set(59, Optional.of(new King(Colour.WHITE)));
-        grid.set(60, Optional.of(new Queen(Colour.WHITE)));
-        grid.set(61, Optional.of(new Bishop(Colour.WHITE)));
-        grid.set(62, Optional.of(new Knight(Colour.WHITE)));
-        grid.set(63, Optional.of(new Rook(Colour.WHITE)));
+        grid.set(0, Optional.of(new Rook(Colour.WHITE)));
+        grid.set(1, Optional.of(new Knight(Colour.WHITE)));
+        grid.set(2, Optional.of(new Bishop(Colour.WHITE)));
+        grid.set(3, Optional.of(new King(Colour.WHITE)));
+        grid.set(4, Optional.of(new Queen(Colour.WHITE)));
+        grid.set(5, Optional.of(new Bishop(Colour.WHITE)));
+        grid.set(6, Optional.of(new Knight(Colour.WHITE)));
+        grid.set(7, Optional.of(new Rook(Colour.WHITE)));
 
         //white pawns
-        for (int cell = 48; cell < 56; cell++) {
+        for (int cell = 8; cell < 16; cell++) {
             grid.set(cell, Optional.of(new Pawn(Colour.WHITE)));
+        }
+
+        //black pieces
+        grid.set(56, Optional.of(new Rook(Colour.BLACK)));
+        grid.set(57, Optional.of(new Knight(Colour.BLACK)));
+        grid.set(58, Optional.of(new Bishop(Colour.BLACK)));
+        grid.set(59, Optional.of(new King(Colour.BLACK)));
+        grid.set(60, Optional.of(new Queen(Colour.BLACK)));
+        grid.set(61, Optional.of(new Bishop(Colour.BLACK)));
+        grid.set(62, Optional.of(new Knight(Colour.BLACK)));
+        grid.set(63, Optional.of(new Rook(Colour.BLACK)));
+
+        //black pawns
+        for (int cell = 48; cell < 56; cell++) {
+            grid.set(cell, Optional.of(new Pawn(Colour.BLACK)));
         }
     };
 

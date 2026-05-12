@@ -20,14 +20,14 @@ public final class Pawn extends Piece {
         Set<Move> res = new HashSet<>();
 
         //a pawn can move one forward if nothing is in front of it
-        int forward = this.getColour() == Colour.WHITE ? -1 : 1;
+        int forward = this.getColour() == Colour.WHITE ? 1 : -1;
         Position inFront = startingPos.add(0, forward);
         if (board.getPieceAt(inFront).isEmpty()) {
             res.add(new Move(startingPos, inFront, this.getColour().name()));
         }
 
         //if we could move forward, and we are in our starting position we might be able to move 2 squares forward
-        int pawnStart = this.getColour() == Colour.WHITE ? 6 : 1;
+        int pawnStart = this.getColour() == Colour.WHITE ? 2 : 7;
         if (!res.isEmpty() && startingPos.y() == pawnStart) {
             Position twoInFront = inFront.add(0, forward);
             if (board.getPieceAt(twoInFront).isEmpty()) {
