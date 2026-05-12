@@ -2,6 +2,7 @@ package com.tinbobs.chess.server.controller;
 
 
 import com.tinbobs.chess.server.engine.GameEngine;
+import com.tinbobs.chess.server.model.IllegalMoveException;
 import com.tinbobs.chess.server.model.player.Human;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.model.state.MoveResult;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+
+import java.util.Set;
 
 @Controller
 public class GameController {
@@ -42,6 +45,12 @@ public class GameController {
         System.out.println("Move received: " + raw.from() + "->" + raw.to());
         try {
             Move move = moveParser.toMove(raw);
+
+            Set<Move> validMoves = gameEngine.getState().getLegalMoves();
+            if (!validMoves.contains(move)) {
+                throw new IllegalMoveException(move);
+            }
+
             humanPlayer.submitMove(move);
 
             //tell the frontend the move was accepted
@@ -49,7 +58,7 @@ public class GameController {
                     new MoveResult(true, raw.correlationID(), null));
 
         }
-        catch (Exception e) {
+        catch (IllegalMoveException e) {
 
             //tell the frontend that the move was not accepted
             messagingTemplate.convertAndSend("/topic/moveResult",

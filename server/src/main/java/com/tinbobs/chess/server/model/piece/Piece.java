@@ -29,7 +29,7 @@ public abstract class Piece {
             Position newPos = startingPos.add(direction[0], direction[1]);
 
             //keep going until we reach a boundary or another piece
-            while (board.getPieceAt(newPos).isEmpty() && !newPos.outOfBounds()) {
+            while (!newPos.outOfBounds() && board.getPieceAt(newPos).isEmpty()) {
                 res.add(new Move(startingPos, newPos, this.colour.name()));
                 newPos = newPos.add(direction[0], direction[1]);
             }

@@ -18,9 +18,8 @@ public record Position(char x, int y) {
             throw new IllegalStateException("Position " + this + " is out of bounds for a standard chessboard.");
         }
 
-        int fileIndex = this.x - 'a';
-        int rankIndex = this.y - 1;
-        return (rankIndex * 8) + fileIndex;
+        int xInt = this.x - 'a';
+        return xInt + ((this.y - 1) * 8);
     }
 
     //we can traverse the board using number or positions
@@ -43,7 +42,7 @@ public record Position(char x, int y) {
         }
 
         //y
-        return this.y < 0 || this.y > 7;
+        return this.y < 1 || this.y > 8;
     }
 
 

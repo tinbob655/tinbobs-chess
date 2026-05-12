@@ -41,7 +41,7 @@ public final class GameState {
         for (int i = 0; i < 64; i++) {
 
             int xInt = i % 8;
-            int yInt = i / 8;
+            int yInt = (i / 8) + 1;
             char x = (char) ('a' + xInt);
             Position pos = new Position(x, yInt);
 
