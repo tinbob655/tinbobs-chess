@@ -22,6 +22,9 @@ public class GameConfig {
 
     @Bean
     public GameEngine gameEngine(Human human, Bot bot) {
+
+        bot.giveBotOpponent(human);
+
         GameEngine engine = new GameEngine();
         engine.addPlayer(human);
         engine.addPlayer(bot);

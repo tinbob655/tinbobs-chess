@@ -7,7 +7,7 @@ import java.util.*;
 
 public final class Board {
 
-    private final List<Optional<Piece>> grid = new ArrayList<>(Collections.nCopies(64, Optional.empty()));
+    private List<Optional<Piece>> grid = new ArrayList<>(Collections.nCopies(64, Optional.empty()));
 
 
     //create a board with default chess pieces
@@ -44,6 +44,11 @@ public final class Board {
             grid.set(cell, Optional.of(new Pawn(Colour.BLACK)));
         }
     };
+
+    //can also create a predefined board
+    public Board(List<Optional<Piece>> startingGrid) {
+        this.grid = startingGrid;
+    }
 
     public int size() {
         return this.grid.size();
