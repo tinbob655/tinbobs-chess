@@ -43,7 +43,7 @@ public final class Board {
         for (int cell = 48; cell < 56; cell++) {
             grid.set(cell, Optional.of(new Pawn(Colour.BLACK)));
         }
-    };
+    }
 
     //can also create a predefined board
     public Board(List<Optional<Piece>> startingGrid) {
