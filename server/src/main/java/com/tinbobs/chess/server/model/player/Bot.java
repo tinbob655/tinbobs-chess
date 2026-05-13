@@ -10,7 +10,7 @@ import java.util.*;
 
 public final class Bot extends Player {
 
-    private static final int MINIMAX_DEPTH = 3;
+    private static final int MINIMAX_DEPTH = 6;
     private Player opponent;
 
 
