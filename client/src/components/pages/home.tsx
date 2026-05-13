@@ -88,7 +88,7 @@ export default function Home():React.ReactElement {
         //the user wants to use the clicked square to make a move
         if (selectedSquare) {
 
-            const move: Move = { from: selectedSquare, to: square, playerName: '' };
+            const move: Move = { from: selectedSquare, to: square, playerName: '', correlationID: '' };
             setSelectedSquare(null);
     
             //attempt to run the move on the backend
