@@ -1,8 +1,7 @@
 package com.tinbobs.chess.server.model.player;
 
 import com.tinbobs.chess.server.model.board.Board;
-import com.tinbobs.chess.server.model.piece.Colour;
-import com.tinbobs.chess.server.model.piece.Piece;
+import com.tinbobs.chess.server.model.piece.*;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 
@@ -30,7 +29,9 @@ public final class Bot extends Player {
         //get all possible move and sort them by suspected best
         Comparator<Move> moveComparator = Comparator.comparingInt(move -> {
             GameState next = this.fakeAdvance(state, move);
-            return this.score(next);
+
+            //negative so the best move is first
+            return -this.score(next);
         });
         Queue<Move> sortedMoves = new PriorityQueue<>(moveComparator);
         Set<Move> legalMoves = state.getLegalMoves();
@@ -117,12 +118,45 @@ public final class Bot extends Player {
     //maps a game state to an integer score based on how favourable it is
     private int score(GameState state) {
 
-        //crude to start with: reward having our own pieces. Punish having opponent pieces
-        return state.board().getGrid().parallelStream()
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .mapToInt(piece -> piece.getColour() == this.getColour() ? piece.getValue() : -piece.getValue())
-                .sum();
+        int res = 0;
+
+        List<Optional<Piece>> grid = state.board().getGrid();
+        for (int i = 0; i < 64; i++) {
+
+            //do nothing for blank grid space
+            if (grid.get(i).isEmpty()) continue;
+
+            Piece piece = grid.get(i).get();
+
+            //reward the bot having material and punish the enemy having material
+            boolean ours = piece.getColour() == this.getColour();
+            int sign = ours ? 1 : -1;
+            int material = piece.getValue() * 100;
+
+            //knight in the middle is better that knight at the edge. Reward / punish this accordingly
+            int positional = getPositionalBonus(piece, i, ours);
+            res += sign * (material + positional);
+        }
+
+        return res;
+    }
+
+    //pieces in different places have different values. Maps a piece to this value
+    private int getPositionalBonus(Piece piece, int index, boolean isOurs) {
+
+        //tables are written as if we are white: flip if we are black
+        int tableIndex = isOurs
+                ? (this.getColour() == Colour.WHITE ? index : mirror(index))
+                : (this.getColour() == Colour.WHITE ? mirror(index) : index);
+
+        return piece.getPieceTable()[tableIndex];
+    }
+
+    //helper to flip a table
+    private int mirror(int index) {
+        int col = index % 8;
+        int row = index / 8;
+        return (7 - row) * 8 + col;
     }
 
     //advances a board when given a move
