@@ -70,6 +70,7 @@ public abstract class Piece {
     //abstract methods
     public abstract Set<Move> getLegalMoves(Position startingPos, Board board);
     public abstract int getValue();
+    public abstract int[] getPieceTable();
 
 
     //equality

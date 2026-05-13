@@ -26,4 +26,18 @@ public final class Rook extends Piece {
     public int getValue() {
         return 5;
     }
+
+    @Override
+    public int[] getPieceTable() {
+        return new int[] {
+                0,  0,  0,  0,  0,  0,  0,  0,
+                5, 10, 10, 10, 10, 10, 10,  5,
+                -5,  0,  0,  0,  0,  0,  0, -5,
+                -5,  0,  0,  0,  0,  0,  0, -5,
+                -5,  0,  0,  0,  0,  0,  0, -5,
+                -5,  0,  0,  0,  0,  0,  0, -5,
+                -5,  0,  0,  0,  0,  0,  0, -5,
+                0,  0,  0,  5,  5,  0,  0,  0,
+        };
+    }
 }
