@@ -4,6 +4,7 @@ package com.tinbobs.chess.server.model.state;
 import com.tinbobs.chess.server.model.board.Board;
 import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.player.Player;
+import com.tinbobs.chess.server.model.status.Status;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -76,5 +77,9 @@ public final class GameState {
     }
     public int hashCode() {
         return Objects.hash(this.board, this.currentTurn);
+    }
+
+    public Status getStatus() {
+        return Status.ONGOING;
     }
 }

@@ -4,6 +4,7 @@
 @use './footer.scss';
 @use './text.scss';
 @use './chessBoard.scss';
+@use './gameWrapper.scss';
 
 
 body {
@@ -45,6 +46,11 @@ div {
         height: 5px;
         background-color: vars.$color-gold-light;
     }
+}
+
+table {
+    table-layout: fixed;
+    width: 100%;
 }
 
 .noVerticalSpacing {
