@@ -18,8 +18,8 @@ public final class Board {
         grid.set(0, Optional.of(new Rook(Colour.WHITE)));
         grid.set(1, Optional.of(new Knight(Colour.WHITE)));
         grid.set(2, Optional.of(new Bishop(Colour.WHITE)));
-        grid.set(3, Optional.of(new King(Colour.WHITE)));
-        grid.set(4, Optional.of(new Queen(Colour.WHITE)));
+        grid.set(3, Optional.of(new Queen(Colour.WHITE)));
+        grid.set(4, Optional.of(new King(Colour.WHITE)));
         grid.set(5, Optional.of(new Bishop(Colour.WHITE)));
         grid.set(6, Optional.of(new Knight(Colour.WHITE)));
         grid.set(7, Optional.of(new Rook(Colour.WHITE)));
@@ -33,8 +33,8 @@ public final class Board {
         grid.set(56, Optional.of(new Rook(Colour.BLACK)));
         grid.set(57, Optional.of(new Knight(Colour.BLACK)));
         grid.set(58, Optional.of(new Bishop(Colour.BLACK)));
-        grid.set(59, Optional.of(new King(Colour.BLACK)));
-        grid.set(60, Optional.of(new Queen(Colour.BLACK)));
+        grid.set(59, Optional.of(new Queen(Colour.BLACK)));
+        grid.set(60, Optional.of(new King(Colour.BLACK)));
         grid.set(61, Optional.of(new Bishop(Colour.BLACK)));
         grid.set(62, Optional.of(new Knight(Colour.BLACK)));
         grid.set(63, Optional.of(new Rook(Colour.BLACK)));
