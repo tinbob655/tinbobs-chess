@@ -13,7 +13,7 @@ public final class GameState {
 
     private final Board board;
     private final Player currentTurn;
-    private final Set<Move> cachedLegalMoves = new HashSet<>();
+    private Set<Move> cachedLegalMoves = new HashSet<>();
 
     public GameState(Board board, Player currentTurn) {
         this.board = board;
@@ -53,6 +53,7 @@ public final class GameState {
             });
         }
 
+        this.cachedLegalMoves = res;
         return res;
     }
 

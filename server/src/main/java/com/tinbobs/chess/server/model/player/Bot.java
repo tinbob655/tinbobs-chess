@@ -6,10 +6,7 @@ import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 
 public final class Bot extends Player {
@@ -28,18 +25,27 @@ public final class Bot extends Player {
 
     public Move turn(GameState state) {
 
+        System.out.println("Bot is thinking...");
+
         //get all possible move and sort them by suspected best
-        Comparator<Move> moveComparator = Comparator.comparingInt(move -> this.score(this.fakeAdvance(state, move)));
-        TreeSet<Move> sortedMoves = new TreeSet<>(moveComparator);
-        sortedMoves.addAll(state.getLegalMoves());
+        Comparator<Move> moveComparator = Comparator.comparingInt(move -> {
+            GameState next = this.fakeAdvance(state, move);
+            return this.score(next);
+        });
+        Queue<Move> sortedMoves = new PriorityQueue<>(moveComparator);
+        Set<Move> legalMoves = state.getLegalMoves();
+        sortedMoves.addAll(legalMoves);
+
+        if (sortedMoves.isEmpty()) {
+            throw new IllegalStateException("No possible moves");
+        }
 
         //do minimax on each move
+        Move bestMove = null;
         int bestScore = Integer.MIN_VALUE;
-        Move bestMove = sortedMoves.first();
         while (!sortedMoves.isEmpty()) {
 
-            Move move = sortedMoves.pollFirst();
-            assert move != null;
+            Move move = sortedMoves.poll();
 
             //pretend we did the move
             GameState newState = this.fakeAdvance(state, move);
@@ -58,7 +64,7 @@ public final class Bot extends Player {
     private int minimax(GameState state, int depth, int alpha, int beta) {
 
         //we might be done
-        if (depth == 0 || state.isGameOver()) {
+        if (depth <= 0 || state.isGameOver()) {
             return this.score(state);
         }
 

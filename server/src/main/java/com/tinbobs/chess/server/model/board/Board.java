@@ -47,7 +47,7 @@ public final class Board {
 
     //can also create a predefined board
     public Board(List<Optional<Piece>> startingGrid) {
-        this.grid = startingGrid;
+        this.grid = new ArrayList<>(startingGrid);
     }
 
     public int size() {
