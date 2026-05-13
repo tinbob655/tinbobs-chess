@@ -92,7 +92,7 @@ export function useChessSocket():socketInfo {
 
             clientRef.current?.publish({
                 destination: '/app/move',
-                body: JSON.stringify(move), //the human always plays as white
+                body: JSON.stringify(move),
             });
         });
     }
