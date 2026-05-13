@@ -66,6 +66,14 @@ public final class Board {
         this.grid.set(pos.toArrayIndex(), Optional.empty());
     }
 
+    public Optional<Position> findPiece(Piece target) {
+        int index = this.grid.indexOf(Optional.of(target));
+        if (index == -1) {
+            return Optional.empty();
+        }
+        else return Optional.of(new Position(index));
+    }
+
     @Override
     public boolean equals(Object o) {
 

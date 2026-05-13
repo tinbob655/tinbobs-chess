@@ -6,6 +6,7 @@ import com.tinbobs.chess.server.model.board.Board;
 import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
+import com.tinbobs.chess.server.model.state.GameStateFactory;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.model.status.GameStatus;
 import com.tinbobs.chess.server.service.CreateFrontendStatus;
@@ -34,6 +35,9 @@ public final class GameEngine implements Engine_API {
     @Autowired
     private CreateFrontendStatus statusCreator;
 
+    @Autowired
+    private GameStateFactory gameStateFactory;
+
 
     public void startGame() {
 
@@ -58,6 +62,10 @@ public final class GameEngine implements Engine_API {
 
     public GameState getState() {
         return this.state;
+    }
+
+    public List<Player> getPlayers() {
+        return this.players;
     }
 
     public void addPlayer(Player player) {
@@ -112,6 +120,6 @@ public final class GameEngine implements Engine_API {
     }
 
     private GameState recomputeState(Board board) {
-        return new GameState(board, this.currentTurn());
+        return this.gameStateFactory.create(board, this.currentTurn(), this.players);
     }
 }

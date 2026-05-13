@@ -4,7 +4,30 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
-public record Position(char x, int y) {
+public final class Position {
+
+    private final char x;
+    private final int y;
+
+    //can optionally just give a grid index and have it converted
+    public Position(char x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+    public Position(int index) {
+        int xInt = index % 8;
+        this.y = (index / 8) + 1;
+        this.x = (char) ('a' + xInt);
+    }
+
+
+    //getters
+    public char x() {
+        return this.x;
+    }
+    public int y() {
+        return this.y;
+    }
 
     @Override
     @NonNull

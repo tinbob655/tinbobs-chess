@@ -3,22 +3,28 @@ package com.tinbobs.chess.server.model.state;
 
 import com.tinbobs.chess.server.model.board.Board;
 import com.tinbobs.chess.server.model.board.Position;
+import com.tinbobs.chess.server.model.piece.*;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.status.Status;
+import com.tinbobs.chess.server.service.FakeAdvance;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 public final class GameState {
 
     private final Board board;
+    private final FakeAdvance fakeAdvance;
     private final Player currentTurn;
+    private final List<Player> players;
     private Set<Move> cachedLegalMoves = new HashSet<>();
 
-    public GameState(Board board, Player currentTurn) {
+    GameState(Board board, Player currentTurn, FakeAdvance fakeAdvanceIn, List<Player> players) {
         this.board = board;
         this.currentTurn = currentTurn;
+        this.fakeAdvance = fakeAdvanceIn;
+        this.players = players;
     }
 
     //getters
@@ -40,19 +46,26 @@ public final class GameState {
 
         //add all pieces legal moves
         for (int i = 0; i < 64; i++) {
+            Position pos = new Position(i);
 
-            int xInt = i % 8;
-            int yInt = (i / 8) + 1;
-            char x = (char) ('a' + xInt);
-            Position pos = new Position(x, yInt);
+            Optional<Piece> maybePiece = board.getPieceAt(pos);
+            if (maybePiece.isEmpty()) continue;
 
-            board.getPieceAt(pos).ifPresent(piece -> {
-
-                if (piece.getColour() == currentTurn.getColour()) {
-                    res.addAll(piece.getLegalMoves(pos, board));
-                }
-            });
+            Piece p = maybePiece.get();
+            if (p.getColour() == currentTurn.getColour()) {
+                res.addAll(p.getLegalMoves(pos, board));
+            }
         }
+
+        //filter out all moves which result in a check
+        res = res.parallelStream()
+                .filter(move -> {
+
+                    //pretend we did the move
+                    GameState fakeState = this.fakeAdvance.fakeAdvance(this, move, players);
+                    return !fakeState.isInCheck(this.currentTurn().getColour());
+                })
+                .collect(Collectors.toSet());
 
         this.cachedLegalMoves = res;
         return res;
@@ -80,6 +93,64 @@ public final class GameState {
     }
 
     public Status getStatus() {
+
+        boolean inCheck = isInCheck(this.currentTurn().getColour());
+        boolean hasMoves = !getLegalMoves().isEmpty();
+
+        //a checkmate happens if we are in check and can't move
+        if (inCheck && !hasMoves) return Status.CHECKMATE;
+
+        //a stalemate happens if we can't move
+        if (!inCheck && !hasMoves) return Status.STALEMATE;
+
+        //a check happens if we are in check (surprisingly)
+        if (inCheck) return Status.CHECK;
+
+        //a draw happens if we don't have enough material
+        if (isInsufficientMaterial()) return Status.DRAW;
+
         return Status.ONGOING;
+    }
+
+    //detects a check
+    private boolean isInCheck(Colour colour) {
+
+        Position kingPos = board.findPiece(new King(colour)).orElse(null);
+        if (kingPos == null) return false;
+
+        //repeat for all opponent pieces
+        for (int i = 0; i < 64; i++) {
+            Position pos = new Position(i);
+            Optional<Piece> piece = board.getPieceAt(pos);
+            if (piece.isEmpty()) continue;
+            if (piece.get().getColour() == currentTurn.getColour()) continue;
+
+            //is the opponent able to take our king
+            boolean attacks = piece.get()
+                    .getLegalMoves(pos, board)
+                    .stream()
+                    .anyMatch(m -> m.to().equals(kingPos));
+
+            if (attacks) return true;
+        }
+
+        return false;
+    }
+
+
+    //a draw happens when both sizes don't have enough material
+    private boolean isInsufficientMaterial() {
+
+        List<Piece> pieces = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            board.getPieceAt(new Position(i)).ifPresent(pieces::add);
+        }
+
+        if (pieces.size() == 2) return true;
+        if (pieces.size() == 3) {
+            return pieces.stream().anyMatch(p -> p instanceof Bishop || p instanceof Knight);
+        }
+
+        return false;
     }
 }
