@@ -1,6 +1,7 @@
 import React, { useState, useEffect} from 'react';
 import { useChessSocket } from '../../hooks/useChessSocket';
 import ChessBoard from './chessBoard';
+import PlayerInfo from './playerInfo';
 
 import applyMove from '../../functions/applyMove';
 import createDefaultBoard from '../../functions/createDefaultBoard';
@@ -12,12 +13,11 @@ import type Move from '../../types/move';
 
 export default function Home():React.ReactElement {
 
-    const {connected, botMove, sendMove, startGame}:socketInfo = useChessSocket();
+    const {connected, botMove, sendMove, startGame, status}:socketInfo = useChessSocket();
 
     const [board, setBoard] = useState<BoardState>([]);
     const [selectedSquare, setSelectedSquare] = useState<string|null>(null);
     const [invalidMoveMessage, setInvalidMoveMessage] = useState<string>('');
-
 
     //create a default board on page load
     useEffect(() => {
@@ -44,17 +44,54 @@ export default function Home():React.ReactElement {
 
     return (
         <React.Fragment>
-
-
             <div id="chessBoardWrapper">
+
                 {connected ? (
                     <React.Fragment>
-                        <p style={{height: '20px'}}>
-                            {invalidMoveMessage}
-                        </p>
+                        <div id="gameWrapper">
+                            
+                            {/*player info*/}
+                            <div id="playerInfoWrapper">
+                                <p>
+                                    Players:
+                                </p>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <td>
 
-                        {/*CHESS BOARD*/}
-                        <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} />
+                                                {/*human player*/}
+                                                <p>
+                                                    You:
+                                                </p>
+                                                <PlayerInfo material={status.human.material || 0} blunderCount={status.human.blunderCount || 0} />
+                                            </td>
+                                            <td>
+
+                                                {/*bot player*/}
+                                                <p>
+                                                    Bot:
+                                                </p>
+                                                <PlayerInfo material={status.bot.material || 0} blunderCount={status.bot.blunderCount || 0} />
+                                            </td>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
+
+                            {/*CHESS BOARD*/}
+                            <div id="chessBoardWrapper">
+                                <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} />
+                            </div>
+
+                            {/*invalid move message*/}
+                            <div id="invalidMoveMessageWrapper">
+                                <p style={{height: '20px'}}>
+                                    {invalidMoveMessage}
+                                </p>
+                            </div>
+                        </div>
+
                     </React.Fragment>
                 ) : (
                     <React.Fragment>

@@ -10,11 +10,13 @@ public abstract class Player {
     private final String name;
     private final Colour colour;
     private int score;
+    private int blunders;
 
     public Player(String name, Colour colour) {
         this.name = name;
         this.colour = colour;
         this.score = 0;
+        this.blunders = 0;
     }
 
     public String getName() {
@@ -26,9 +28,15 @@ public abstract class Player {
     public int getScore() {
         return this.score;
     }
+    public int getBlunders() {
+        return this.blunders;
+    }
 
     public void capture(Piece piece) {
         this.score += piece.getValue();
+    }
+    public void addBlunder() {
+        this.blunders++;
     }
 
     //abstract methods players must implement

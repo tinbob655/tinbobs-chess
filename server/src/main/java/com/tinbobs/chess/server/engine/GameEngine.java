@@ -7,6 +7,8 @@ import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
+import com.tinbobs.chess.server.model.status.GameStatus;
+import com.tinbobs.chess.server.service.CreateFrontendStatus;
 import com.tinbobs.chess.server.service.MoveParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -28,6 +30,9 @@ public final class GameEngine implements Engine_API {
 
     @Autowired
     private MoveParser moveParser;
+
+    @Autowired
+    private CreateFrontendStatus statusCreator;
 
 
     public void startGame() {
@@ -77,6 +82,10 @@ public final class GameEngine implements Engine_API {
         //do the move
         this.state = this.advance(move);
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
+
+        //send the new game state to the frontend
+        GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
+        this.messagingTemplate.convertAndSend("/topic/status", status);
     }
     
     private Player currentTurn() {
