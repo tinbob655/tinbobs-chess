@@ -9,13 +9,13 @@ public abstract class Player {
 
     private final String name;
     private final Colour colour;
-    private int score;
+    private int material;
     private int blunders;
 
     public Player(String name, Colour colour) {
         this.name = name;
         this.colour = colour;
-        this.score = 0;
+        this.material = 39;
         this.blunders = 0;
     }
 
@@ -25,15 +25,16 @@ public abstract class Player {
     public Colour getColour() {
         return this.colour;
     }
-    public int getScore() {
-        return this.score;
+    public int getMaterial() {
+        return this.material;
     }
     public int getBlunders() {
         return this.blunders;
     }
 
+    //will happen if we LOOSE a piece
     public void capture(Piece piece) {
-        this.score += piece.getValue();
+        this.material -= piece.getValue();
     }
     public void addBlunder() {
         this.blunders++;

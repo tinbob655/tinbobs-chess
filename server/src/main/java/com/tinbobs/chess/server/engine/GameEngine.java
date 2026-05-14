@@ -3,6 +3,7 @@ package com.tinbobs.chess.server.engine;
 
 import com.tinbobs.chess.server.model.IllegalMoveException;
 import com.tinbobs.chess.server.model.board.Board;
+import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
@@ -13,10 +14,7 @@ import com.tinbobs.chess.server.service.PositionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -89,10 +87,24 @@ public final class GameEngine implements Engine_API {
         if (!validMoves.contains(move)) {
             throw new IllegalMoveException(move);
         }
+        
+        //save if this move was a capture move for later
+        Optional<Piece> targetPiece = this.state.board().getPieceAt(move.to());
 
         //do the move
         this.state = this.state.advance(move);
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
+        this.checkForBlunder(currentPlayer, scoreBeforeTurn);
+
+        //the move may have been a capture move (take the piece from the other (next) player)
+        targetPiece.ifPresent(piece -> this.state.currentTurn().capture(piece));
+
+        //send the new game state to the frontend
+        GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
+        this.messagingTemplate.convertAndSend("/topic/status", status);
+    }
+
+    private void checkForBlunder(Player currentPlayer, int scoreBeforeTurn) {
 
         //work out the score after we do the move and compare to detect a blunder
         GameState stateAfterOpponentBestReply = this.state.getLegalMoves().stream()
@@ -104,9 +116,5 @@ public final class GameEngine implements Engine_API {
         if (scoreAfterTurn < scoreBeforeTurn - BLUNDER_THRESHOLD) {
             currentPlayer.addBlunder();
         }
-
-        //send the new game state to the frontend
-        GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
-        this.messagingTemplate.convertAndSend("/topic/status", status);
     }
 }
