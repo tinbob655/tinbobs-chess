@@ -53,10 +53,11 @@ export default function Home():React.ReactElement {
                             
                             {/*player info*/}
                             <div id="playerInfoWrapper">
-                                <p>
+                                <h2>
                                     Players:
-                                </p>
-                                <table>
+                                </h2>
+                                <div className="dividerLine"></div>
+                                <table className="playerInfoTable">
                                     <thead>
                                         <tr>
                                             <td>

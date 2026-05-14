@@ -4,7 +4,7 @@
     position: relative;
     display: grid;
     gap: 10px;
-    width: min(220px, 86%);
+    width: 86%;
     padding: 12px 14px;
     margin: 6px auto 0;
     border-radius: 16px;
@@ -49,6 +49,16 @@
 .playerInfoCard > * {
     position: relative;
     z-index: 1;
+}
+
+.playerInfoTable {
+    border-collapse: separate;
+    border-spacing: 20px 0;
+    margin-left: auto;
+    margin-right: auto;
+    table-layout: auto;
+    width: max-content;
+    max-width: 100%;
 }
 
 .playerInfoStat {

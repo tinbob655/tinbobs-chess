@@ -9,13 +9,15 @@ interface params {
 export default function PlayerInfo({material, blunderCount}:params):React.ReactElement {
 
     return (
-        <React.Fragment>
-            <p style={{color: 'green'}}>
-                Material: {material}
-            </p>
-            <p style={{color: 'orange'}}>
-                Blunders: {blunderCount}
-            </p>
-        </React.Fragment>
+        <div className="playerInfoCard">
+            <div className="playerInfoStat playerInfoStat--material">
+                <span className="playerInfoLabel">Material</span>
+                <span className="playerInfoValue">{material}</span>
+            </div>
+            <div className="playerInfoStat playerInfoStat--blunders">
+                <span className="playerInfoLabel">Blunders</span>
+                <span className="playerInfoValue">{blunderCount}</span>
+            </div>
+        </div>
     );
 };
