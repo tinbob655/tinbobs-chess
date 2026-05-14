@@ -9,6 +9,7 @@ import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.model.status.GameStatus;
 import com.tinbobs.chess.server.service.CreateFrontendStatus;
 import com.tinbobs.chess.server.service.MoveParser;
+import com.tinbobs.chess.server.service.PositionEvaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
@@ -20,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
 
 public final class GameEngine implements Engine_API {
 
+    private static final int BLUNDER_THRESHOLD = 300;
     private GameState state;
     private final List<Player> players = new ArrayList<>();
 
@@ -31,6 +33,9 @@ public final class GameEngine implements Engine_API {
 
     @Autowired
     private CreateFrontendStatus statusCreator;
+
+    @Autowired
+    private PositionEvaluator evaluator;
 
 
     public void startGame() {
@@ -72,7 +77,10 @@ public final class GameEngine implements Engine_API {
 
     public void turn() {
 
+        //work out the score before the player makes a move
         Player currentPlayer = this.state.currentTurn();
+        int scoreBeforeTurn = this.evaluator.evaluate(this.state, currentPlayer.getColour());
+
         Move move = currentPlayer.turn(this.state);
 
         //validate the move
@@ -84,6 +92,12 @@ public final class GameEngine implements Engine_API {
         //do the move
         this.state = this.state.advance(move);
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
+
+        //work out the score after we do the move and compare to detect a blunder
+        int scoreAfterTurn = this.evaluator.evaluate(this.state, currentPlayer.getColour());
+        if (scoreAfterTurn < scoreBeforeTurn - BLUNDER_THRESHOLD) {
+            currentPlayer.addBlunder();
+        }
 
         //send the new game state to the frontend
         GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
