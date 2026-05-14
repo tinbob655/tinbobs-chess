@@ -6,7 +6,6 @@ import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.piece.*;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.status.Status;
-import com.tinbobs.chess.server.service.FakeAdvance;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,16 +14,32 @@ import java.util.stream.Collectors;
 public final class GameState {
 
     private final Board board;
-    private final FakeAdvance fakeAdvance;
     private final Player currentTurn;
     private final List<Player> players;
     private Set<Move> cachedLegalMoves = new HashSet<>();
 
-    GameState(Board board, Player currentTurn, FakeAdvance fakeAdvanceIn, List<Player> players) {
+    public GameState(Board board, Player currentTurn, List<Player> players) {
         this.board = board;
         this.currentTurn = currentTurn;
-        this.fakeAdvance = fakeAdvanceIn;
         this.players = players;
+    }
+
+    //advances the game state
+    public GameState advance(Move move) {
+
+        //update the board
+        Board newBoard = new Board(this.board().getGrid());
+        Piece fromPiece = newBoard.getPieceAt(move.from()).orElseThrow();
+        newBoard.removePieceAt(move.from());
+        newBoard.setPieceAt(move.to(), fromPiece);
+
+        //find the next player
+        Player nextPlayer = players.stream()
+                .filter(p -> p.getColour() != this.currentTurn().getColour())
+                .findFirst()
+                .orElseThrow();
+
+        return new GameState(newBoard, nextPlayer, players);
     }
 
     //getters
@@ -62,7 +77,7 @@ public final class GameState {
                 .filter(move -> {
 
                     //pretend we did the move
-                    GameState fakeState = this.fakeAdvance.fakeAdvance(this, move, players);
+                    GameState fakeState = this.advance(move);
                     return !fakeState.isInCheck(this.currentTurn().getColour());
                 })
                 .collect(Collectors.toSet());

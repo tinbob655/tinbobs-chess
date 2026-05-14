@@ -3,27 +3,18 @@ package com.tinbobs.chess.server.model.player;
 import com.tinbobs.chess.server.model.piece.*;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
-import com.tinbobs.chess.server.service.FakeAdvance;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
 
 public final class Bot extends Player {
 
-    @Autowired
-    private FakeAdvance fakeAdvance;
 
     private static final int MINIMAX_DEPTH = 5;
-    private Player opponent;
 
 
     public Bot(String name, Colour colour) {
         super(name, colour);
-    }
-
-    public void giveBotOpponent(Player p) {
-        this.opponent = p;
     }
 
     public Move turn(GameState state) {
@@ -32,7 +23,7 @@ public final class Bot extends Player {
 
         //get all possible move and sort them by suspected best
         Comparator<Move> moveComparator = Comparator.comparingInt(move -> {
-            GameState next = this.fakeAdvance.fakeAdvance(state, move, List.of(this, this.opponent));
+            GameState next = state.advance(move);
 
             //negative so the best move is first
             return -this.score(next);
@@ -53,7 +44,7 @@ public final class Bot extends Player {
             Move move = sortedMoves.poll();
 
             //pretend we did the move
-            GameState newState = this.fakeAdvance.fakeAdvance(state, move, List.of(this, this.opponent));
+            GameState newState = state.advance(move);
             int moveScore = this.minimax(newState, MINIMAX_DEPTH -1, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
             //keep track of the best move
@@ -83,7 +74,7 @@ public final class Bot extends Player {
             res = Integer.MIN_VALUE;
             for (Move move : availableMoves) {
 
-                GameState nextState = this.fakeAdvance.fakeAdvance(state, move, List.of(this, this.opponent));
+                GameState nextState = state.advance(move);
                 int nextScore = this.minimax(nextState, depth - 1, alpha, beta);
 
                 //if we found the next best thing
@@ -102,7 +93,7 @@ public final class Bot extends Player {
             res = Integer.MAX_VALUE;
             for (Move move : availableMoves) {
 
-                GameState nextState = this.fakeAdvance.fakeAdvance(state, move, List.of(this, this.opponent));
+                GameState nextState = state.advance(move);
                 int nextScore = this.minimax(nextState, depth -1, alpha, beta);
 
                 //if we found the next worst thing

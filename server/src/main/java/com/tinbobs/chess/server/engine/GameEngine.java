@@ -3,10 +3,8 @@ package com.tinbobs.chess.server.engine;
 
 import com.tinbobs.chess.server.model.IllegalMoveException;
 import com.tinbobs.chess.server.model.board.Board;
-import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
-import com.tinbobs.chess.server.model.state.GameStateFactory;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.model.status.GameStatus;
 import com.tinbobs.chess.server.service.CreateFrontendStatus;
@@ -35,9 +33,6 @@ public final class GameEngine implements Engine_API {
     @Autowired
     private CreateFrontendStatus statusCreator;
 
-    @Autowired
-    private GameStateFactory gameStateFactory;
-
 
     public void startGame() {
 
@@ -50,7 +45,7 @@ public final class GameEngine implements Engine_API {
         Board board = new Board();
 
         //create a game state
-        this.state = this.recomputeState(board);
+        this.state = new GameState(board, this.players.get(0), this.players);
 
         //need to run on a separate thread to do blocking
         CompletableFuture.runAsync(() -> {
@@ -88,7 +83,7 @@ public final class GameEngine implements Engine_API {
         }
 
         //do the move
-        this.state = this.advance(move);
+        this.state = this.state.advance(move);
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
 
         //send the new game state to the frontend
@@ -98,28 +93,5 @@ public final class GameEngine implements Engine_API {
     
     private Player currentTurn() {
         return this.players.get(this.turnIndex);
-    }
-
-    private GameState advance(Move move) {
-
-        //update the board
-        Board board = this.state.board();
-        Piece p = board.getPieceAt(move.from()).orElseThrow();
-        board.removePieceAt(move.from());
-        
-        //if there is a piece at the target location then this is a capture move
-        board.getPieceAt(move.to()).ifPresent(piece -> this.currentTurn().capture(piece));
-
-        board.setPieceAt(move.to(), p);
-
-        //increment the turn
-        this.turnIndex = (this.turnIndex + 1) % this.players.size();
-
-        //recompute and return state
-        return this.recomputeState(board);
-    }
-
-    private GameState recomputeState(Board board) {
-        return this.gameStateFactory.create(board, this.currentTurn(), this.players);
     }
 }
