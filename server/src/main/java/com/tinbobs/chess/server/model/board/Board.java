@@ -57,7 +57,10 @@ public final class Board {
         return this.grid;
     }
     public Optional<Piece> getPieceAt(@NonNull Position pos) {
-        return this.grid.get(pos.toArrayIndex());
+        if (pos.outOfBounds()) {
+            return Optional.empty();
+        }
+        else return this.grid.get(pos.toArrayIndex());
     }
     public void setPieceAt(@NonNull Position pos, Piece p) {
         this.grid.set(pos.toArrayIndex(), Optional.of(p));
