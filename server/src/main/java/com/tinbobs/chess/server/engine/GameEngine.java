@@ -62,10 +62,6 @@ public final class GameEngine implements Engine_API {
         return this.state;
     }
 
-    public List<Player> getPlayers() {
-        return this.players;
-    }
-
     public void addPlayer(Player player) {
 
         //refuse to add more than 2 players

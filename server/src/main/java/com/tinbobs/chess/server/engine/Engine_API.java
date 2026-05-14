@@ -11,5 +11,4 @@ public interface Engine_API {
     void addPlayer(Player player);
     void turn();
     GameState getState();
-    List<Player> getPlayers();
 }
