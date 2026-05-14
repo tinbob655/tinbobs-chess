@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -94,7 +95,12 @@ public final class GameEngine implements Engine_API {
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
 
         //work out the score after we do the move and compare to detect a blunder
-        int scoreAfterTurn = this.evaluator.evaluate(this.state, currentPlayer.getColour());
+        GameState stateAfterOpponentBestReply = this.state.getLegalMoves().stream()
+                .map(this.state::advance)
+                .min(Comparator.comparingInt(s -> evaluator.evaluate(s, currentPlayer.getColour())))
+                .orElse(this.state); // fallback if no moves (game over)
+
+        int scoreAfterTurn = evaluator.evaluate(stateAfterOpponentBestReply, currentPlayer.getColour());
         if (scoreAfterTurn < scoreBeforeTurn - BLUNDER_THRESHOLD) {
             currentPlayer.addBlunder();
         }
