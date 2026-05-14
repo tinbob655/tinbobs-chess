@@ -33,12 +33,11 @@ function renderBoard(board: BoardState, selectedSquare: string | null, handleSqu
             const isSelected = square === selectedSquare;
 
             cells.push(
-                <td className="cell noVerticalSpacing" key={square} onClick={() => handleSquareClick(square)}
-                 style={{backgroundColor: isSelected ? '#D4AF5C' : isLight ? '#F0D9B5' : '#1C2B45', border: isSelected ? '2px solid #B8963A' : 'none'}}>
+                <td className={`cell noVerticalSpacing ${isSelected ? 'highlighted' : ''} ${isLight ? 'light' : 'dark'}`} 
+                key={square} onClick={() => handleSquareClick(square)}>
                     <div className="chessCell">
                          {piece && (
-                            <span className="noVerticalSpacing" 
-                            style={{filter: piece.color === 'white' ? 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))' : 'drop-shadow(0 1px 2px rgba(255,255,255,0.2))', }}>
+                            <span className={`noVerticalSpacing pieceWrapper ${piece.color === 'white' ? 'white' : 'black'}`}>
                                 {getPieceSymbol(piece)}
                             </span>
                         )}
