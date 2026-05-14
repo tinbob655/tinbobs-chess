@@ -6,17 +6,19 @@ import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.piece.*;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.status.Status;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 
-public final class GameState {
+public final class GameState implements StateAPI {
 
     private final Board board;
     private final Player currentTurn;
     private final List<Player> players;
     private Set<Move> cachedLegalMoves = new HashSet<>();
+    private Status cachedGameStatus = null;
 
     public GameState(Board board, Player currentTurn, List<Player> players) {
         this.board = board;
@@ -25,7 +27,7 @@ public final class GameState {
     }
 
     //advances the game state
-    public GameState advance(Move move) {
+    public @NonNull GameState advance(Move move) {
 
         //update the board
         Board newBoard = new Board(this.board().getGrid());
@@ -50,7 +52,7 @@ public final class GameState {
         return this.currentTurn;
     }
 
-    public Set<Move> getLegalMoves() {
+    public @NonNull Set<Move> getLegalMoves() {
 
         //only calculate moves once to save computation
         if (!this.cachedLegalMoves.isEmpty()) {
@@ -87,7 +89,8 @@ public final class GameState {
     }
 
     public boolean isGameOver() {
-        return false;
+        Status s = this.getStatus();
+        return (s == Status.CHECKMATE) || (s == Status.STALEMATE) || (s == Status.DRAW);
     }
 
 
@@ -107,7 +110,17 @@ public final class GameState {
         return Objects.hash(this.board, this.currentTurn);
     }
 
+    @NonNull
     public Status getStatus() {
+
+        if (this.cachedGameStatus == null) {
+            this.cachedGameStatus = this.calculateFirstStatus();
+        }
+        return this.cachedGameStatus;
+    }
+
+    @NonNull
+    private Status calculateFirstStatus() {
 
         boolean inCheck = isInCheck(this.currentTurn().getColour());
         boolean hasMoves = !getLegalMoves().isEmpty();
@@ -138,7 +151,7 @@ public final class GameState {
             Position pos = new Position(i);
             Optional<Piece> piece = board.getPieceAt(pos);
             if (piece.isEmpty()) continue;
-            if (piece.get().getColour() == currentTurn.getColour()) continue;
+            if (piece.get().getColour() == colour) continue;
 
             //is the opponent able to take our king
             boolean attacks = piece.get()
