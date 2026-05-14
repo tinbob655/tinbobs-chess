@@ -15,11 +15,12 @@ import squareToIndex from '../../../functions/squareToIndex';
 
 export default function Home():React.ReactElement {
 
-    const {connected, botMove, sendMove, startGame, status, waitingForBotMove}:socketInfo = useChessSocket();
+    const {connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves}:socketInfo = useChessSocket();
 
     const [board, setBoard] = useState<BoardState>([]);
     const [selectedSquare, setSelectedSquare] = useState<string|null>(null);
     const [invalidMoveMessage, setInvalidMoveMessage] = useState<string>('');
+    const [validMoveTargets, setValidMoveTargets] = useState<number[]>([]);
 
     //create a default board on page load
     useEffect(() => {
@@ -88,7 +89,7 @@ export default function Home():React.ReactElement {
                                 <Thinking botThinking={waitingForBotMove}/>
 
                                 {/*CHESS BOARD*/}
-                                <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} from={botMove ? squareToIndex(botMove.from) : -1} to={botMove ? (squareToIndex(botMove.to)) : -1} />
+                                <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} from={botMove ? squareToIndex(botMove.from) : -1} to={botMove ? (squareToIndex(botMove.to)) : -1} availableTargetLocations={validMoveTargets} />
                             </div>
 
                             {/*invalid move message*/}
@@ -161,6 +162,18 @@ export default function Home():React.ReactElement {
         //the user has selected this square as the first part of their move
         else {
             setSelectedSquare(square);
+
+            //show the user all the valid moves
+            getValidMoves(squareToIndex(square))
+
+                .then((locations: number[]) => {
+                    setValidMoveTargets(locations);
+                })
+
+                //for some reason we couldn't get that piece's moves
+                .catch((reason: string) => {
+                    setInvalidMoveMessage(reason);
+                })
         }
     }
 };

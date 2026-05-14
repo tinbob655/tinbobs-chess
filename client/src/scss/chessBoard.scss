@@ -39,6 +39,30 @@ div.chessCell {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+}
+
+span.moveTargetDot {
+    position: absolute;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background-color: #111111;
+    opacity: 0.75;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    &.occupied {
+        width: 0.55rem;
+        height: 0.55rem;
+        left: auto;
+        top: auto;
+        right: 18%;
+        bottom: 18%;
+        transform: none;
+        opacity: 0.85;
+    }
 }
 
 span.pieceWrapper {

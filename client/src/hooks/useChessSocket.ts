@@ -13,11 +13,18 @@ interface MoveResult {
     reason: string | null;
 };
 
+interface validMoveTargetsResult {
+    targets: number[];
+    id: string;
+    reason: string | null;
+};
+
 export function useChessSocket():socketInfo {
 
 
     const clientRef = useRef<Client|null>(null);
     const pendingMoves = useRef<Map<string, { resolve: () => void; reject: (reason: string) => void }>>(new Map());
+    const pendingTargets = useRef<Map<string, { resolve: (targets: number[]) => void; reject: (reason: string) => void }>>(new Map());
 
     const [waitingForBotMove, setWaitingForBotMove] = useState<boolean>(false);
     const [botMove, setBotMove] = useState<Move|null>(null);
@@ -83,6 +90,25 @@ export function useChessSocket():socketInfo {
                     const gameStatus:status = JSON.parse(message.body);
                     setStatus(gameStatus);
                 })
+
+                //listen for the result of us asking what the valid move targets were
+                client.subscribe('/topic/validMoveTargets', (message) => {
+                    
+                    const res:validMoveTargetsResult = JSON.parse(message.body);
+                    const pending = pendingTargets.current.get(res.id);
+
+                    if (pending) {
+                        if (res.targets.length >= 1) {
+
+                            pending.resolve(res.targets);
+                        }
+                        else {
+                            pending.reject(res.reason ?? "Invalid move");
+                        }
+                    }
+
+                    pendingTargets.current.delete(res.id);
+                })
             },
 
             onDisconnect: () => setConnected(false),
@@ -126,6 +152,26 @@ export function useChessSocket():socketInfo {
         });
     }
 
+    //requests the valid target moves for a given piece
+    function getValidMoves(squareIndex: number): Promise<number[]> {
+        return new Promise<number[]>((resolve, reject) => {
+
+            const id = crypto.randomUUID();
+            pendingTargets.current.set(id, {resolve, reject});
+
+            const request = {
+                squareIndex: squareIndex,
+                id: id,
+            };
+
+            //request a list of valid move targets for this piece
+            clientRef.current?.publish({
+                destination: '/app/getValidMoves',
+                body: JSON.stringify(request),
+            });
+        })
+    }
+
     //when we refresh the front we need to tell the back to restart the game
     window.onbeforeunload = ((event:BeforeUnloadEvent) => {
         event.preventDefault();
@@ -136,5 +182,5 @@ export function useChessSocket():socketInfo {
         });
     });
 
-    return { connected, botMove, sendMove, startGame, status, waitingForBotMove };
+    return { connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves };
 }

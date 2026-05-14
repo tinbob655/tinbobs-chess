@@ -1,11 +1,14 @@
 package com.tinbobs.chess.server.controller;
 
 
+import com.tinbobs.chess.server.controller.records.TargetsResult;
 import com.tinbobs.chess.server.engine.GameEngine;
 import com.tinbobs.chess.server.model.IllegalMoveException;
+import com.tinbobs.chess.server.model.board.Board;
+import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.player.Human;
 import com.tinbobs.chess.server.model.state.Move;
-import com.tinbobs.chess.server.model.state.MoveResult;
+import com.tinbobs.chess.server.controller.records.MoveResult;
 import com.tinbobs.chess.server.model.state.RawMove;
 import com.tinbobs.chess.server.service.MoveParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +69,36 @@ public class GameController {
         }
     }
 
+    //frontend says to reset the game
     @MessageMapping("/refresh")
     public void refresh() {
         this.gameEngine.reset();
+    }
+
+    //frontend has asked for the legal moves of a piece at a location
+    @MessageMapping("/getValidMoves")
+    public void frontendGetValidMoves(int index, String id) {
+
+        TargetsResult res;
+
+        try {
+            Position pos = new Position(index);
+            Board board = this.gameEngine.getState().board();
+            Set<Move> moves = board.getPieceAt(pos).orElseThrow().getLegalMoves(pos, board);
+
+            int[] targets =  moves.parallelStream()
+                    .mapToInt(move -> move.to().toArrayIndex())
+                    .toArray();
+
+            //send the response back to the frontend
+            res = new TargetsResult(targets, id, null);
+        }
+        catch (Exception e) {
+
+            //tell the frontend we failed
+            res = new TargetsResult(new int[]{}, id, e.getMessage());
+        }
+
+        this.messagingTemplate.convertAndSend("topic/validMoveTargets", res);
     }
 }

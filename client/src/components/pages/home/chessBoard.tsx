@@ -8,53 +8,68 @@ interface params {
     handleSquareClick: (square: string) => void;
     from: number,
     to: number,
+    availableTargetLocations: number[];
 }
 
-export default function ChessBoard({ board, selectedSquare, handleSquareClick, from, to }: params): React.ReactElement {
+export default function ChessBoard({ board, selectedSquare, handleSquareClick, from, to, availableTargetLocations }: params): React.ReactElement {
+
+
     return (
         <table id="board">
             <tbody>
-                {renderBoard(board, selectedSquare, handleSquareClick, from, to)}
+                {renderBoard()}
             </tbody>
         </table>
     );
-}
 
-function renderBoard(board: BoardState, selectedSquare: string | null, handleSquareClick: (square: string) => void, from:number, to:number): React.ReactElement[] {
-    const rows: React.ReactElement[] = [];
 
-    //7 down to start with white
-    for (let row = 7; row >= 0; row--) {
-        const cells: React.ReactElement[] = [];
+    //creates the board
+    function renderBoard(): React.ReactElement[] {
+        const rows: React.ReactElement[] = [];
+    
+        //7 down to start with white
+        for (let row = 7; row >= 0; row--) {
+            const cells: React.ReactElement[] = [];
+    
+            for (let col = 0; col < 8; col++) {
+    
+                const square = indexToSquare(col, row);
+                const piece = board[squareToIndex(square)];
+                const isLight = (row + col) % 2 !== 0;
+                const isSelected = square === selectedSquare;
+    
+                //highlight all cells which the previous bot move involved
+                const index = squareToIndex(square);
+                const isFromOrTo = (index === from) || (index === to);
 
-        for (let col = 0; col < 8; col++) {
-
-            const square = indexToSquare(col, row);
-            const piece = board[squareToIndex(square)];
-            const isLight = (row + col) % 2 !== 0;
-            const isSelected = square === selectedSquare;
-
-            const index = squareToIndex(square);
-            const isFromOrTo = (index === from) || (index === to);
-
-            cells.push(
-                <td className={`cell noVerticalSpacing ${(isSelected || isFromOrTo) ? 'highlighted' : ''} ${isLight ? 'light' : 'dark'}`} 
-                key={square} onClick={() => handleSquareClick(square)}>
-                    <div className="chessCell">
-                         {piece && (
-                            <span className={`noVerticalSpacing pieceWrapper ${piece.color === 'white' ? 'white' : 'black'}`}>
-                                {getPieceSymbol(piece)}
-                            </span>
-                        )}
-                    </div>
-
-                </td>
-            );
+                //is this a valid target location
+                const isTarget = availableTargetLocations.includes(index);
+    
+                cells.push(
+                    <td className={`cell noVerticalSpacing ${(isSelected || isFromOrTo) ? 'highlighted' : ''} ${isLight ? 'light' : 'dark'}`} 
+                    key={square} onClick={() => handleSquareClick(square)}>
+                        <div className="chessCell">
+                            {isTarget && (
+                                <span
+                                    className={`moveTargetDot ${piece ? 'occupied' : ''}`}
+                                    aria-hidden="true"
+                                />
+                            )}
+                             {piece && (
+                                <span className={`noVerticalSpacing pieceWrapper ${piece.color === 'white' ? 'white' : 'black'}`}>
+                                    {getPieceSymbol(piece)}
+                                </span>
+                            )}
+                        </div>
+    
+                    </td>
+                );
+            }
+            rows.push(<tr className="noVerticalSpacing" key={row}>{cells}</tr>);
         }
-        rows.push(<tr className="noVerticalSpacing" key={row}>{cells}</tr>);
+    
+        return rows;
     }
-
-    return rows;
 }
 
 function indexToSquare(col: number, row: number): string {

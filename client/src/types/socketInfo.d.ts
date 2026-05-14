@@ -8,4 +8,5 @@ export default interface socketInfo {
     startGame():void;
     status: status;
     waitingForBotMove: boolean;
+    getValidMoves (squareIndex: number): Promise<number[]>;
 }
