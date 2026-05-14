@@ -22,7 +22,6 @@ public final class GameEngine implements Engine_API {
 
     private GameState state;
     private final List<Player> players = new ArrayList<>();
-    private int turnIndex = 0;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -73,7 +72,7 @@ public final class GameEngine implements Engine_API {
 
     public void turn() {
 
-        Player currentPlayer = this.currentTurn();
+        Player currentPlayer = this.state.currentTurn();
         Move move = currentPlayer.turn(this.state);
 
         //validate the move
@@ -89,9 +88,5 @@ public final class GameEngine implements Engine_API {
         //send the new game state to the frontend
         GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
         this.messagingTemplate.convertAndSend("/topic/status", status);
-    }
-    
-    private Player currentTurn() {
-        return this.players.get(this.turnIndex);
     }
 }
