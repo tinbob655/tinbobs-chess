@@ -1,6 +1,6 @@
 import React from 'react';
-import type { BoardState, Piece } from '../../types/chessObjects';
-import squareToIndex from '../../functions/squareToIndex';
+import type { BoardState, Piece } from '../../../types/chessObjects';
+import squareToIndex from '../../../functions/squareToIndex';
 
 interface params {
     board: BoardState;

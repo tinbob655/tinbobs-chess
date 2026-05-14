@@ -3,7 +3,7 @@ import {Route, Routes} from 'react-router';
 
 
 //import all pages
-import Home from './components/pages/home';
+import Home from './components/pages/home/home';
 
 export default function AllRoutes():React.ReactElement {
 

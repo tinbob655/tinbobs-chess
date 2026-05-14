@@ -1,19 +1,19 @@
 import React, { useState, useEffect} from 'react';
-import { useChessSocket } from '../../hooks/useChessSocket';
+import { useChessSocket } from '../../../hooks/useChessSocket';
 import ChessBoard from './chessBoard';
 import PlayerInfo from './playerInfo';
 
-import applyMove from '../../functions/applyMove';
-import createDefaultBoard from '../../functions/createDefaultBoard';
+import applyMove from '../../../functions/applyMove';
+import createDefaultBoard from '../../../functions/createDefaultBoard';
 
-import type { BoardState } from '../../types/chessObjects';
-import type socketInfo from '../../types/socketInfo';
-import type Move from '../../types/move';
+import type { BoardState } from '../../../types/chessObjects';
+import type socketInfo from '../../../types/socketInfo';
+import type Move from '../../../types/move';
 
 
 export default function Home():React.ReactElement {
 
-    const {connected, botMove, sendMove, startGame, status}:socketInfo = useChessSocket();
+    const {connected, botMove, sendMove, startGame, status, waitingForBotMove}:socketInfo = useChessSocket();
 
     const [board, setBoard] = useState<BoardState>([]);
     const [selectedSquare, setSelectedSquare] = useState<string|null>(null);
@@ -79,8 +79,12 @@ export default function Home():React.ReactElement {
                                 </table>
                             </div>
 
-                            {/*CHESS BOARD*/}
                             <div id="chessBoardWrapper">
+
+                                {/*tells the user when the bot is thinking*/}
+                                
+
+                                {/*CHESS BOARD*/}
                                 <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} />
                             </div>
 
