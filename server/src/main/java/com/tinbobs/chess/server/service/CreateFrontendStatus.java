@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class CreateFrontendStatus {
+public final class CreateFrontendStatus {
 
     public GameStatus createFrontendStatus(List<Player> players, GameState state) {
 

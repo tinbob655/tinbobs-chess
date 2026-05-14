@@ -7,7 +7,7 @@ import com.tinbobs.chess.server.model.state.RawMove;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MoveParser {
+public final class MoveParser {
 
     //"e2" -> Position('e', 2)
     public Move toMove(RawMove raw) {
