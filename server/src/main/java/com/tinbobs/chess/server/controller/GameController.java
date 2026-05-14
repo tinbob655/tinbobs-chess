@@ -48,7 +48,7 @@ public class GameController {
         //log receipt of the move
         try {
             Move move = moveParser.toMove(raw);
-            System.out.println(move);
+            System.out.println("Received move: " + move);
 
             Set<Move> validMoves = gameEngine.getState().getLegalMoves();
             if (!validMoves.contains(move)) {
