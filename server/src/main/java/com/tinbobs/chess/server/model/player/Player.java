@@ -40,6 +40,11 @@ public abstract class Player {
         this.blunders++;
     }
 
+    public void reset() {
+        this.material = 39;
+        this.blunders = 0;
+    }
+
     //abstract methods players must implement
     public abstract Move turn(GameState state);
 }

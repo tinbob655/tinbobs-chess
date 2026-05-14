@@ -65,4 +65,9 @@ public class GameController {
                     new MoveResult(false, raw.correlationID(), e.getMessage()));
         }
     }
+
+    @MessageMapping("/refresh")
+    public void refresh() {
+        this.gameEngine.reset();
+    }
 }

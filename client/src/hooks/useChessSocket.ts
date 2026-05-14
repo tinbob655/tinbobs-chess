@@ -126,5 +126,15 @@ export function useChessSocket():socketInfo {
         });
     }
 
+    //when we refresh the front we need to tell the back to restart the game
+    window.onbeforeunload = ((event:BeforeUnloadEvent) => {
+        event.preventDefault();
+        
+        clientRef.current?.publish({
+            destination: "/app/refresh",
+            body: '',
+        });
+    });
+
     return { connected, botMove, sendMove, startGame, status, waitingForBotMove };
 }

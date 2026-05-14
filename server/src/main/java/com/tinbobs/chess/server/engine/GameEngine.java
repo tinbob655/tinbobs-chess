@@ -37,6 +37,22 @@ public final class GameEngine implements Engine_API {
     private PositionEvaluator evaluator;
 
 
+    //totally resets the game
+    public void reset() {
+
+        //create new state
+        Board newBoard = new Board();
+        this.players.forEach(Player::reset);
+        this.state = new GameState(newBoard, this.players.get(0), this.players);
+
+        //send new status to front
+        GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
+        this.messagingTemplate.convertAndSend("/topic/status", status);
+
+        //log
+        System.out.println("Game successfully reset!");
+    }
+
     public void startGame() {
 
         //do not start if we don't have 2 players
