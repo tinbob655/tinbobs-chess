@@ -35,6 +35,10 @@ public final class PositionEvaluator {
             res += sign * (material + positional);
         }
 
+        //a piece with more available moves is in a better position
+        int mobilityBonus = state.currentTurn().getColour() == perspective ? 5 : -5;
+        res += mobilityBonus * state.getLegalMoves().size();
+
         return res;
     }
 

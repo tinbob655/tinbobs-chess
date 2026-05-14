@@ -66,7 +66,7 @@ export default function Home():React.ReactElement {
                                                 <p>
                                                     You:
                                                 </p>
-                                                <PlayerInfo material={status.human.material || 0} blunderCount={status.human.blunderCount || 0} />
+                                                <PlayerInfo material={status.human.material || 39} blunderCount={status.human.blunderCount || 0} />
                                             </td>
                                             <td>
 
@@ -74,7 +74,7 @@ export default function Home():React.ReactElement {
                                                 <p>
                                                     Bot:
                                                 </p>
-                                                <PlayerInfo material={status.bot.material || 0} blunderCount={status.bot.blunderCount || 0} />
+                                                <PlayerInfo material={status.bot.material || 39} blunderCount={status.bot.blunderCount || 0} />
                                             </td>
                                         </tr>
                                     </thead>
