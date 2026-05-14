@@ -145,7 +145,14 @@ export default function Home():React.ReactElement {
                 //backend rejected the move
                 .catch((reason: string) => {
                     console.warn('Move rejected:', reason);
-                    setInvalidMoveMessage("Invalid move!");
+
+                    //it might not even be our turn
+                    if (waitingForBotMove) {
+                        setInvalidMoveMessage("Not your turn yet!");
+                    }
+                    else {
+                        setInvalidMoveMessage("Invalid move.");
+                    }
                 });
     
         }

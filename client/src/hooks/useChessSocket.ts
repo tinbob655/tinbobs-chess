@@ -71,7 +71,6 @@ export function useChessSocket():socketInfo {
                         else {
 
                             //the move we submitted was invalid
-                            setWaitingForBotMove(false);
                             pending.reject(result.reason ?? 'Invalid move');
                         }
                         pendingMoves.current.delete(result.correlationID);
