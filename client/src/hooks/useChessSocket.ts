@@ -122,6 +122,18 @@ export function useChessSocket():socketInfo {
 
     }, []);
 
+    //when we refresh the front we need to tell the back to restart the game
+    useEffect(() => {
+        window.onbeforeunload = ((event:BeforeUnloadEvent) => {
+            event.preventDefault();
+
+            clientRef.current?.publish({
+                destination: "/app/refresh",
+                body: '',
+            });
+        });
+    })
+
 
     //other components will call this to send a human move to the backend
     function sendMove(from: string, to: string): Promise<void> {
@@ -171,16 +183,6 @@ export function useChessSocket():socketInfo {
             });
         })
     }
-
-    //when we refresh the front we need to tell the back to restart the game
-    window.onbeforeunload = ((event:BeforeUnloadEvent) => {
-        event.preventDefault();
-        
-        clientRef.current?.publish({
-            destination: "/app/refresh",
-            body: '',
-        });
-    });
 
     return { connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves };
 }
