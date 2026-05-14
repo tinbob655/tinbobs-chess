@@ -3,6 +3,7 @@ package com.tinbobs.chess.server.model.player;
 import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
+import org.jspecify.annotations.NonNull;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -15,7 +16,7 @@ public final class Human extends Player {
         super(name, colour);
     }
 
-    public Move turn(GameState state) {
+    public @NonNull Move turn(GameState state) {
 
         //block until frontend chooses a move
         this.pendingMove = new CompletableFuture<>();

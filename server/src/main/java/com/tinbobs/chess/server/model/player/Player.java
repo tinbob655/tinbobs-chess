@@ -4,6 +4,7 @@ import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
+import org.jspecify.annotations.NonNull;
 
 public abstract class Player {
 
@@ -46,5 +47,6 @@ public abstract class Player {
     }
 
     //abstract methods players must implement
+    @NonNull
     public abstract Move turn(GameState state);
 }

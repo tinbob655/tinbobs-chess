@@ -36,6 +36,7 @@ public final class Bot extends Player {
         transpositionTable.clear();
     }
 
+    @NonNull
     public Move turn(GameState state) {
 
         System.out.println("Bot is thinking...");
@@ -48,7 +49,7 @@ public final class Bot extends Player {
         }
 
         //do minimax on each move
-        Move bestMove = null;
+        Move bestMove = sortedMoves.peek();
         int bestScore = Integer.MIN_VALUE;
         while (!sortedMoves.isEmpty()) {
 
@@ -64,6 +65,8 @@ public final class Bot extends Player {
                 bestMove = move;
             }
         }
+
+        System.out.println("Bot decided on a move: " + bestMove.toString());
 
         return bestMove;
     }

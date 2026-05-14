@@ -46,9 +46,9 @@ public class GameController {
     public void handleMove(RawMove raw) {
 
         //log receipt of the move
-        System.out.println("Move received: " + raw.from() + "->" + raw.to());
         try {
             Move move = moveParser.toMove(raw);
+            System.out.println(move);
 
             Set<Move> validMoves = gameEngine.getState().getLegalMoves();
             if (!validMoves.contains(move)) {
