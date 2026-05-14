@@ -97,6 +97,8 @@ export function useChessSocket():socketInfo {
                     const res:validMoveTargetsResult = JSON.parse(message.body);
                     const pending = pendingTargets.current.get(res.id);
 
+                    console.log('fired');
+
                     if (pending) {
                         if (res.targets.length >= 1) {
 

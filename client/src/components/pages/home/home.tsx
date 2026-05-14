@@ -134,7 +134,10 @@ export default function Home():React.ReactElement {
         if (selectedSquare) {
 
             const move: Move = { from: selectedSquare, to: square, playerName: '', correlationID: '' };
+
+            //reset UI selection indicators
             setSelectedSquare(null);
+            setValidMoveTargets([]);
     
             //attempt to run the move on the backend
             sendMove(move.from, move.to)

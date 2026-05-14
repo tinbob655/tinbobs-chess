@@ -2,6 +2,7 @@ package com.tinbobs.chess.server.controller;
 
 
 import com.tinbobs.chess.server.controller.records.TargetsResult;
+import com.tinbobs.chess.server.controller.records.ValidMoveRequest;
 import com.tinbobs.chess.server.engine.GameEngine;
 import com.tinbobs.chess.server.model.IllegalMoveException;
 import com.tinbobs.chess.server.model.board.Board;
@@ -77,12 +78,12 @@ public class GameController {
 
     //frontend has asked for the legal moves of a piece at a location
     @MessageMapping("/getValidMoves")
-    public void frontendGetValidMoves(int index, String id) {
+    public void frontendGetValidMoves(ValidMoveRequest incoming) {
 
         TargetsResult res;
 
         try {
-            Position pos = new Position(index);
+            Position pos = new Position(incoming.squareIndex());
             Board board = this.gameEngine.getState().board();
             Set<Move> moves = board.getPieceAt(pos).orElseThrow().getLegalMoves(pos, board);
 
@@ -91,14 +92,14 @@ public class GameController {
                     .toArray();
 
             //send the response back to the frontend
-            res = new TargetsResult(targets, id, null);
+            res = new TargetsResult(targets, incoming.id(), null);
         }
         catch (Exception e) {
 
             //tell the frontend we failed
-            res = new TargetsResult(new int[]{}, id, e.getMessage());
+            res = new TargetsResult(new int[]{}, incoming.id(), e.getMessage());
         }
 
-        this.messagingTemplate.convertAndSend("topic/validMoveTargets", res);
+        this.messagingTemplate.convertAndSend("/topic/validMoveTargets", res);
     }
 }
