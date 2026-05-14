@@ -9,6 +9,7 @@ import createDefaultBoard from '../../../functions/createDefaultBoard';
 import type { BoardState } from '../../../types/chessObjects';
 import type socketInfo from '../../../types/socketInfo';
 import type Move from '../../../types/move';
+import Thinking from './thinking';
 
 
 export default function Home():React.ReactElement {
@@ -82,7 +83,7 @@ export default function Home():React.ReactElement {
                             <div id="chessBoardWrapper">
 
                                 {/*tells the user when the bot is thinking*/}
-                                
+                                <Thinking botThinking={waitingForBotMove}/>
 
                                 {/*CHESS BOARD*/}
                                 <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} />

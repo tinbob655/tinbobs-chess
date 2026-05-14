@@ -7,4 +7,5 @@ export default interface socketInfo {
     sendMove (from: string, to: string):Promise<void>;
     startGame():void;
     status: status;
+    waitingForBotMove: boolean;
 }

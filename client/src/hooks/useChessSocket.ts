@@ -19,6 +19,7 @@ export function useChessSocket():socketInfo {
     const clientRef = useRef<Client|null>(null);
     const pendingMoves = useRef<Map<string, { resolve: () => void; reject: (reason: string) => void }>>(new Map());
 
+    const [waitingForBotMove, setWaitingForBotMove] = useState<boolean>(false);
     const [botMove, setBotMove] = useState<Move|null>(null);
     const [connected, setConnected] = useState(false);
     const [status, setStatus] = useState<status>({
@@ -49,6 +50,7 @@ export function useChessSocket():socketInfo {
 
                     //only for bot moves
                     if (move.playerName !== 'Player') {
+                        setWaitingForBotMove(false);
                         setBotMove(move);
                     }
                 });
@@ -58,17 +60,18 @@ export function useChessSocket():socketInfo {
 
                     const result: MoveResult = JSON.parse(message.body);
                     const pending = pendingMoves.current.get(result.correlationID);
-                    console.log(pending);
 
                     if (pending) {
                         if (result.valid) {
 
                             //the move we submitted was valid
+                            setWaitingForBotMove(true);
                             pending.resolve();
                         }
                         else {
 
                             //the move we submitted was invalid
+                            setWaitingForBotMove(false);
                             pending.reject(result.reason ?? 'Invalid move');
                         }
                         pendingMoves.current.delete(result.correlationID);
@@ -124,5 +127,5 @@ export function useChessSocket():socketInfo {
         });
     }
 
-    return { connected, botMove, sendMove, startGame, status };
+    return { connected, botMove, sendMove, startGame, status, waitingForBotMove };
 }
