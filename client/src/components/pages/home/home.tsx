@@ -10,6 +10,7 @@ import type { BoardState } from '../../../types/chessObjects';
 import type socketInfo from '../../../types/socketInfo';
 import type Move from '../../../types/move';
 import Thinking from './thinking';
+import squareToIndex from '../../../functions/squareToIndex';
 
 
 export default function Home():React.ReactElement {
@@ -87,7 +88,7 @@ export default function Home():React.ReactElement {
                                 <Thinking botThinking={waitingForBotMove}/>
 
                                 {/*CHESS BOARD*/}
-                                <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} />
+                                <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} from={botMove ? squareToIndex(botMove.from) : -1} to={botMove ? (squareToIndex(botMove.to)) : -1} />
                             </div>
 
                             {/*invalid move message*/}

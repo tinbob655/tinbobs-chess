@@ -6,19 +6,21 @@ interface params {
     board: BoardState;
     selectedSquare: string | null;
     handleSquareClick: (square: string) => void;
+    from: number,
+    to: number,
 }
 
-export default function ChessBoard({ board, selectedSquare, handleSquareClick }: params): React.ReactElement {
+export default function ChessBoard({ board, selectedSquare, handleSquareClick, from, to }: params): React.ReactElement {
     return (
         <table id="board">
             <tbody>
-                {renderBoard(board, selectedSquare, handleSquareClick)}
+                {renderBoard(board, selectedSquare, handleSquareClick, from, to)}
             </tbody>
         </table>
     );
 }
 
-function renderBoard(board: BoardState, selectedSquare: string | null, handleSquareClick: (square: string) => void): React.ReactElement[] {
+function renderBoard(board: BoardState, selectedSquare: string | null, handleSquareClick: (square: string) => void, from:number, to:number): React.ReactElement[] {
     const rows: React.ReactElement[] = [];
 
     //7 down to start with white
@@ -32,8 +34,11 @@ function renderBoard(board: BoardState, selectedSquare: string | null, handleSqu
             const isLight = (row + col) % 2 !== 0;
             const isSelected = square === selectedSquare;
 
+            const index = squareToIndex(square);
+            const isFromOrTo = (index === from) || (index === to);
+
             cells.push(
-                <td className={`cell noVerticalSpacing ${isSelected ? 'highlighted' : ''} ${isLight ? 'light' : 'dark'}`} 
+                <td className={`cell noVerticalSpacing ${(isSelected || isFromOrTo) ? 'highlighted' : ''} ${isLight ? 'light' : 'dark'}`} 
                 key={square} onClick={() => handleSquareClick(square)}>
                     <div className="chessCell">
                          {piece && (
