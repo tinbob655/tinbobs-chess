@@ -34,10 +34,12 @@ export function useChessSocket():socketInfo {
         human: {
             material: 0,
             blunderCount: 0,
+            capturedPieces: [],
         },
         bot: {
             material: 0,
             blunderCount: 0,
+            capturedPieces: [],
         },
     });
 

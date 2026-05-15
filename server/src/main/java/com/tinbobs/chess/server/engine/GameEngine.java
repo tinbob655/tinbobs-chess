@@ -108,8 +108,12 @@ public final class GameEngine implements Engine_API {
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
         this.checkForBlunder(currentPlayer, scoreBeforeTurn);
 
-        //the move may have been a capture move (take the piece from the other (next) player)
-        targetPiece.ifPresent(piece -> this.state.currentTurn().capture(piece));
+        //the move may have been a capture move
+        //take it from the next player's pieces and add it to the current player's captured pieces
+        targetPiece.ifPresent(piece -> {
+            this.state.currentTurn().pieceTaken(piece);
+            currentPlayer.takePiece(piece);
+        });
 
         //send the new game state to the frontend
         GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);

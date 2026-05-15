@@ -6,10 +6,14 @@ import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 import org.jspecify.annotations.NonNull;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public abstract class Player {
 
     private final String name;
     private final Colour colour;
+    private final List<Piece> capturedPieces = new LinkedList<>();
     private int material;
     private int blunders;
 
@@ -32,10 +36,23 @@ public abstract class Player {
     public int getBlunders() {
         return this.blunders;
     }
+    public List<Piece> getCapturedPieces() {
+        return this.capturedPieces;
+    }
 
-    //will happen if we LOOSE a piece
-    public void capture(Piece piece) {
+    public void pieceTaken(Piece piece) {
+        if (piece.getColour() != this.colour) {
+            throw new IllegalArgumentException("Cannot loose material for the loss of an opponent's piece");
+        }
+
         this.material -= piece.getValue();
+    }
+    public void takePiece(Piece piece) {
+        if (piece.getColour() == this.colour) {
+            throw new IllegalArgumentException("Cannot take own piece");
+        }
+
+        this.capturedPieces.add(piece);
     }
     public void addBlunder() {
         this.blunders++;
@@ -44,6 +61,7 @@ public abstract class Player {
     public void reset() {
         this.material = 39;
         this.blunders = 0;
+        this.capturedPieces.clear();
     }
 
     //abstract methods players must implement

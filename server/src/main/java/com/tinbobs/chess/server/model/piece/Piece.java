@@ -1,5 +1,8 @@
 package com.tinbobs.chess.server.model.piece;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.tinbobs.chess.server.model.board.Board;
 import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.state.Move;
@@ -9,6 +12,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+//when we send a piece to the frontend, it needs to know what type of piece it is
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Pawn.class,   name = "pawn"),
+        @JsonSubTypes.Type(value = Rook.class,   name = "rook"),
+        @JsonSubTypes.Type(value = Knight.class, name = "knight"),
+        @JsonSubTypes.Type(value = Bishop.class, name = "bishop"),
+        @JsonSubTypes.Type(value = Queen.class,  name = "queen"),
+        @JsonSubTypes.Type(value = King.class,   name = "king"),
+})
+
 public abstract class Piece {
 
     private final Colour colour;
@@ -17,6 +31,7 @@ public abstract class Piece {
         this.colour = colour;
     }
 
+    @JsonProperty("color")
     public Colour getColour() {
         return this.colour;
     }
@@ -34,7 +49,7 @@ public abstract class Piece {
                 newPos = newPos.add(direction[0], direction[1]);
             }
 
-            //if at the end we collided with a piece of a different colour then add that as a capture move
+            //if at the end we collided with a piece of a different colour then add that as a pieceTaken move
             if (!newPos.outOfBounds()) {
                 Position finalNewPos = newPos;
                 board.getPieceAt(newPos).ifPresent(piece -> {

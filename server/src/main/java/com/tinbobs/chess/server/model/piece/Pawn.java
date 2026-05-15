@@ -35,7 +35,7 @@ public final class Pawn extends Piece {
             }
         }
 
-        //finally, a pawn can capture another piece if it is diagonal-forward
+        //finally, a pawn can pieceTaken another piece if it is diagonal-forward
         int[][] diagonals = new int[][]{{1, forward}, {-1, forward}};
         for (int[] diagonal : diagonals) {
             Position pos = startingPos.add(diagonal[0], diagonal[1]);
@@ -43,7 +43,7 @@ public final class Pawn extends Piece {
                 board.getPieceAt(pos).ifPresent(piece -> {
                     if (piece.getColour() != this.getColour()) {
 
-                        //capture is allowed
+                        //pieceTaken is allowed
                         res.add(new Move(startingPos, pos, this.getColour().name()));
                     }
                 });

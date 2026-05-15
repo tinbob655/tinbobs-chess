@@ -1,6 +1,7 @@
 import React from 'react';
-import type { BoardState, Piece } from '../../../types/chessObjects';
+import type {BoardState} from '../../../types/chessObjects';
 import squareToIndex from '../../../functions/squareToIndex';
+import {getPieceSymbol} from "../../../functions/getPieceSymbol.ts";
 
 interface params {
     board: BoardState;
@@ -74,12 +75,4 @@ export default function ChessBoard({ board, selectedSquare, handleSquareClick, f
 
 function indexToSquare(col: number, row: number): string {
     return String.fromCharCode('a'.charCodeAt(0) + col) + (row + 1);
-}
-
-function getPieceSymbol(piece: Piece): string {
-    const symbols: Record<string, Record<string, string>> = {
-        white: { king: '♔', queen: '♕', rook: '♖', bishop: '♗', knight: '♘', pawn: '♙' },
-        black: { king: '♚', queen: '♛', rook: '♜', bishop: '♝', knight: '♞', pawn: '♟' },
-    };
-    return symbols[piece.color][piece.type];
 }

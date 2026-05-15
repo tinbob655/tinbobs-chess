@@ -21,7 +21,7 @@ public final class CreateFrontendStatus {
         Map<Colour, PlayerInfo> infoByColour = players.stream()
                 .collect(Collectors.toMap(
                         Player::getColour,
-                        p -> new PlayerInfo(p.getMaterial(), p.getBlunders())
+                        p -> new PlayerInfo(p.getMaterial(), p.getBlunders(), p.getCapturedPieces())
                 ));
 
         //make sure we have a human and a bot

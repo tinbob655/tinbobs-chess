@@ -179,7 +179,7 @@ public final class Bot extends Player {
     //keeps evaluating states until all pieces are safe
     private int quiescence(GameState state, int alpha, int beta) {
 
-        //if we choose not to capture we get this score
+        //if we choose not to pieceTaken we get this score
         int standPat = this.evaluator.evaluate(state, this.getColour());
 
         if (state.currentTurn().getColour() == this.getColour()) {
@@ -195,7 +195,7 @@ public final class Bot extends Player {
             beta = Math.min(beta, standPat);
         }
 
-        //now assume we will capture
+        //now assume we will pieceTaken
         Set<Move> captures = state.getLegalMoves().stream()
                 .filter(m -> state.board().getPieceAt(m.to()).isPresent())
                 .collect(Collectors.toSet());
