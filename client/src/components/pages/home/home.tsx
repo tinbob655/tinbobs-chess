@@ -72,7 +72,7 @@ export default function Home():React.ReactElement {
 
     return (
         <React.Fragment>
-            <div id="chessBoardWrapper">
+            <div id="mainWrapper">
 
                 {connected ? (
                     <React.Fragment>
