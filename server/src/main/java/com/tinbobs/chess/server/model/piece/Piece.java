@@ -95,10 +95,13 @@ public abstract class Piece {
             return false;
         }
 
-        return p.getColour() == this.colour;
+        return (
+                (p.getColour() == this.colour)
+                && (p.getClass() == this.getClass())
+                );
     }
     @Override
     public int hashCode() {
-        return Objects.hash(this.colour);
+        return Objects.hash(this.colour, this.getClass());
     }
 }
