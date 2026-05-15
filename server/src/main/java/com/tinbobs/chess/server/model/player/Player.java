@@ -57,6 +57,9 @@ public abstract class Player {
     public void addBlunder() {
         this.blunders++;
     }
+    public void promotion() {
+        this.material += 8;
+    }
 
     public void reset() {
         this.material = 39;

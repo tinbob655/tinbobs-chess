@@ -28,6 +28,7 @@ public final class GameState implements StateAPI {
     }
 
     //advances the game state
+    @Override
     public @NonNull GameState advance(Move move) {
 
         //update the board
@@ -42,17 +43,30 @@ public final class GameState implements StateAPI {
                 .findFirst()
                 .orElseThrow();
 
+        //pawns become queens if they reach the end of the board
+        boolean isWhitePawnPromoting = (fromPiece instanceof Pawn) && (fromPiece.getColour() == Colour.WHITE) && (move.to().y() == 8);
+        boolean isBlackPawnPromoting = (fromPiece instanceof Pawn) && (fromPiece.getColour() == Colour.BLACK) && (move.to().y() == 1);
+        if (isWhitePawnPromoting) {
+            newBoard.setPieceAt(move.to(), new Queen(Colour.WHITE));
+        }
+        else if (isBlackPawnPromoting) {
+            newBoard.setPieceAt(move.to(), new Queen(Colour.BLACK));
+        }
+
         return new GameState(newBoard, nextPlayer, players);
     }
 
     //getters
+    @Override
     public Board board() {
         return this.board;
     }
+    @Override
     public Player currentTurn() {
         return this.currentTurn;
     }
 
+    @Override
     public @NonNull Set<Move> getLegalMoves() {
 
         //only calculate moves once to save computation
@@ -89,6 +103,7 @@ public final class GameState implements StateAPI {
         return res;
     }
 
+    @Override
     public boolean isGameOver() {
         Status s = this.getStatus();
         return (s == Status.CHECKMATE) || (s == Status.STALEMATE) || (s == Status.DRAW);
@@ -116,6 +131,7 @@ public final class GameState implements StateAPI {
     }
 
     @NonNull
+    @Override
     public Status getStatus() {
 
         if (this.cachedGameStatus == null) {

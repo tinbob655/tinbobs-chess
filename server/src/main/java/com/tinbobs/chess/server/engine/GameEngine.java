@@ -3,6 +3,8 @@ package com.tinbobs.chess.server.engine;
 
 import com.tinbobs.chess.server.model.IllegalMoveException;
 import com.tinbobs.chess.server.model.board.Board;
+import com.tinbobs.chess.server.model.piece.Colour;
+import com.tinbobs.chess.server.model.piece.Pawn;
 import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
@@ -117,6 +119,14 @@ public final class GameEngine implements Engine_API {
             this.state.currentTurn().pieceTaken(piece);
             currentPlayer.takePiece(piece);
         });
+
+        //deal with pawn promotions
+        boolean wasPromotion = (this.state.board().getPieceAt(move.from()).orElse(null) instanceof Pawn)
+                && ((currentPlayer.getColour() == Colour.WHITE && move.to().y() == 8)
+                ||  (currentPlayer.getColour() == Colour.BLACK && move.to().y() == 1));
+        if (wasPromotion) {
+            currentPlayer.promotion();
+        }
 
         //send the new game state to the frontend
         GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
