@@ -3,6 +3,7 @@ package com.tinbobs.chess.server.model.state;
 
 import com.tinbobs.chess.server.model.board.Board;
 import com.tinbobs.chess.server.model.board.Position;
+import com.tinbobs.chess.server.model.board.ZobristTable;
 import com.tinbobs.chess.server.model.piece.*;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.status.Status;
@@ -106,8 +107,12 @@ public final class GameState implements StateAPI {
                 && (s.currentTurn().equals(this.currentTurn))
                 );
     }
+    @Override
     public int hashCode() {
-        return Objects.hash(this.board, this.currentTurn);
+        long boardHash = ZobristTable.hash(this.board.getGrid());
+        long turnHash = (long) this.currentTurn.getColour().hashCode() * 0x9E3779B97F4A7C15L;
+        long combined = boardHash ^ turnHash;
+        return Long.hashCode(combined);
     }
 
     @NonNull

@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -146,15 +146,14 @@ export function useChessSocket():socketInfo {
 
 
     //other components will call this to send a human move to the backend
-    function sendMove(from: string, to: string): Promise<void> {
+    const sendMove = useCallback((from: string, to: string): Promise<void> => {
         return new Promise<void>((resolve, reject) => {
 
             const correlationId = crypto.randomUUID();
             pendingMoves.current.set(correlationId, { resolve, reject });
 
-            const move:Move = {
-                from: from,
-                to: to,
+            const move: Move = {
+                from, to,
                 playerName: "Player",
                 correlationID: correlationId,
             };
@@ -164,35 +163,29 @@ export function useChessSocket():socketInfo {
                 body: JSON.stringify(move),
             });
         });
-    }
+    }, []);
 
-    //start the game
-    function startGame():void {
+    //start the game when we want to
+    const startGame = useCallback((): void => {
         clientRef.current?.publish({
             destination: '/app/start',
             body: '',
         });
-    }
+    }, []);
 
-    //requests the valid target moves for a given piece
-    function getValidMoves(squareIndex: number): Promise<number[]> {
+    //will return the valid moves for a piece at an index
+    const getValidMoves = useCallback((squareIndex: number): Promise<number[]> => {
         return new Promise<number[]>((resolve, reject) => {
 
             const id = crypto.randomUUID();
-            pendingTargets.current.set(id, {resolve, reject});
+            pendingTargets.current.set(id, { resolve, reject });
 
-            const request = {
-                squareIndex: squareIndex,
-                id: id,
-            };
-
-            //request a list of valid move targets for this piece
             clientRef.current?.publish({
                 destination: '/app/getValidMoves',
-                body: JSON.stringify(request),
+                body: JSON.stringify({ squareIndex, id }),
             });
-        })
-    }
+        });
+    }, []);
 
     return { connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves, gameOverState };
 }
