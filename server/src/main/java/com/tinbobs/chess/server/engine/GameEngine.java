@@ -71,6 +71,9 @@ public final class GameEngine implements Engine_API {
             while (!this.state.isGameOver()) {
                 this.turn();
             }
+
+            //the game is over, tell the frontend
+            this.messagingTemplate.convertAndSend("/topic/gameOver", this.state.getStatus());
         });
     }
 

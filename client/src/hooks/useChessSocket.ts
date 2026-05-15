@@ -4,7 +4,7 @@ import SockJS from 'sockjs-client';
 
 import type socketInfo from '../types/socketInfo';
 import type Move from '../types/move';
-import type { status } from '../types/status';
+import type {gameStatus, status} from '../types/status';
 
 
 interface MoveResult {
@@ -29,6 +29,7 @@ export function useChessSocket():socketInfo {
     const [waitingForBotMove, setWaitingForBotMove] = useState<boolean>(false);
     const [botMove, setBotMove] = useState<Move|null>(null);
     const [connected, setConnected] = useState(false);
+    const [gameOverState, setGameOverState] = useState<string|null>(null);
     const [status, setStatus] = useState<status>({
         gameStatus: 'ONGOING',
         human: {
@@ -111,6 +112,13 @@ export function useChessSocket():socketInfo {
 
                     pendingTargets.current.delete(res.id);
                 })
+
+                //the server will tell us when the game ends
+                client.subscribe('/topic/gameOver', (message) => {
+
+                    const res:gameStatus = JSON.parse(message.body);
+                    setGameOverState(res);
+                });
             },
 
             onDisconnect: () => setConnected(false),
@@ -186,5 +194,5 @@ export function useChessSocket():socketInfo {
         })
     }
 
-    return { connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves };
+    return { connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves, gameOverState };
 }

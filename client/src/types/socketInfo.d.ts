@@ -9,4 +9,5 @@ export default interface socketInfo {
     status: status;
     waitingForBotMove: boolean;
     getValidMoves (squareIndex: number): Promise<number[]>;
+    gameOverState: string|null;
 }

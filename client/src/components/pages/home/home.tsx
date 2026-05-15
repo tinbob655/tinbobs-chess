@@ -15,12 +15,13 @@ import squareToIndex from '../../../functions/squareToIndex';
 
 export default function Home():React.ReactElement {
 
-    const {connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves}:socketInfo = useChessSocket();
+    const {connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves, gameOverState}:socketInfo = useChessSocket();
 
     const [board, setBoard] = useState<BoardState>(() => createDefaultBoard());
     const [selectedSquare, setSelectedSquare] = useState<string|null>(null);
     const [invalidMoveMessage, setInvalidMoveMessage] = useState<string>('');
     const [validMoveTargets, setValidMoveTargets] = useState<number[]>([]);
+    const [gameOverMessage, setGameOverMessage] = useState<string>('');
 
     //when we are connected, start the game
     useEffect(() => {
@@ -43,6 +44,30 @@ export default function Home():React.ReactElement {
         };
         stateQueue();
     }, [botMove]);
+
+    //when the game is over create a message
+    useEffect(() => {
+
+        if (!gameOverState) return;
+
+        const messageUpdater = () => {
+            setTimeout(() => {
+                switch (gameOverState) {
+
+                    //shouldn't ever happen really
+                    case "ONGOING": setGameOverMessage(''); break;
+                    case "CHECK": setGameOverMessage(''); break;
+
+                    //actual game ending states
+                    case "DRAW": setGameOverMessage("The game ended in a DRAW!"); break;
+                    case "STALEMATE": setGameOverMessage("The game ended in a STALEMATE!"); break;
+                    case "CHECKMATE": setGameOverMessage(waitingForBotMove ? "You won!" : "The bot won!"); break;
+                }
+            }, 0);
+        };
+
+        messageUpdater();
+    }, [gameOverState, waitingForBotMove]);
 
 
     return (
@@ -92,9 +117,24 @@ export default function Home():React.ReactElement {
                             </div>
 
                             <div id="chessBoardWrapper">
+                                {gameOverState ? (
+                                    <React.Fragment>
 
-                                {/*tells the user when the bot is thinking*/}
-                                <Thinking botThinking={waitingForBotMove}/>
+                                        {/*game is over*/}
+                                        <h2>
+                                            GAME OVER!
+                                        </h2>
+                                        <p>
+                                            {gameOverMessage}
+                                        </p>
+                                    </React.Fragment>
+                                ) : (
+                                    <React.Fragment>
+
+                                        {/*thinking...*/}
+                                        <Thinking botThinking={waitingForBotMove}/>
+                                    </React.Fragment>
+                                )}
 
                                 {/*CHESS BOARD*/}
                                 <ChessBoard board={board} handleSquareClick={(square:string) => squareClicked(square)} selectedSquare={selectedSquare} from={botMove ? squareToIndex(botMove.from) : -1} to={botMove ? (squareToIndex(botMove.to)) : -1} availableTargetLocations={validMoveTargets} />
