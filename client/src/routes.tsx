@@ -16,7 +16,7 @@ export default function AllRoutes():React.ReactElement {
 
 function getRoutes():React.ReactElement[] {
 
-    let res:React.ReactElement[] = [];
+    const res:React.ReactElement[] = [];
     const pages:[string, React.ReactElement][] = [
         ['', <Home/>],
     ];

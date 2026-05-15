@@ -93,7 +93,7 @@
 }
 
 .playerInfoLabel {
-    font-family: "Donegal One";
+    font-family: "Donegal One", serif;
     font-size: 11px;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -102,7 +102,7 @@
 
 .playerInfoValue {
     justify-self: end;
-    font-family: "Alkatra";
+    font-family: "Alkatra", serif;
     font-size: 22px;
     line-height: 1;
     color: var(--stat-accent);

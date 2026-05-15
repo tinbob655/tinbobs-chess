@@ -6,7 +6,7 @@ import type Move from "../types/move";
 
 export default function applyMove(board:BoardState, move:Move):BoardState {
 
-    let newBoard = Array.from(board);
+    const newBoard = Array.from(board);
     const from:number = squareToIndex(move.from);
     const to:number = squareToIndex(move.to);
 

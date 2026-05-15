@@ -17,16 +17,10 @@ export default function Home():React.ReactElement {
 
     const {connected, botMove, sendMove, startGame, status, waitingForBotMove, getValidMoves}:socketInfo = useChessSocket();
 
-    const [board, setBoard] = useState<BoardState>([]);
+    const [board, setBoard] = useState<BoardState>(() => createDefaultBoard());
     const [selectedSquare, setSelectedSquare] = useState<string|null>(null);
     const [invalidMoveMessage, setInvalidMoveMessage] = useState<string>('');
     const [validMoveTargets, setValidMoveTargets] = useState<number[]>([]);
-
-    //create a default board on page load
-    useEffect(() => {
-
-        setBoard(createDefaultBoard());
-    }, []);
 
     //when we are connected, start the game
     useEffect(() => {
@@ -34,14 +28,20 @@ export default function Home():React.ReactElement {
         if (connected) {
             startGame();
         }
-    }, [connected]);
+    }, [connected, startGame]);
 
     //when a bot moves, apply the move
     useEffect(() => {
 
         if (!botMove) return;
 
-        setBoard(prev => applyMove(prev, botMove));
+        //queue updates rather than doing them straight away
+        const stateQueue = () => {
+            setTimeout(() => {
+                setBoard(prev => applyMove(prev, botMove));
+            }, 0);
+        };
+        stateQueue();
     }, [botMove]);
 
 
@@ -89,7 +89,7 @@ export default function Home():React.ReactElement {
                                 <Thinking botThinking={waitingForBotMove}/>
 
                                 {/*CHESS BOARD*/}
-                                <ChessBoard board={board} handleSquareClick={(square:string) => {squareClicked(square)}} selectedSquare={selectedSquare} from={botMove ? squareToIndex(botMove.from) : -1} to={botMove ? (squareToIndex(botMove.to)) : -1} availableTargetLocations={validMoveTargets} />
+                                <ChessBoard board={board} handleSquareClick={(square:string) => squareClicked(square)} selectedSquare={selectedSquare} from={botMove ? squareToIndex(botMove.from) : -1} to={botMove ? (squareToIndex(botMove.to)) : -1} availableTargetLocations={validMoveTargets} />
                             </div>
 
                             {/*invalid move message*/}

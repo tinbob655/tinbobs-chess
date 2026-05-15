@@ -11,13 +11,13 @@ interface MoveResult {
     valid: boolean;
     correlationID: string;
     reason: string | null;
-};
+}
 
 interface validMoveTargetsResult {
     targets: number[];
     id: string;
     reason: string | null;
-};
+}
 
 export function useChessSocket():socketInfo {
 
@@ -117,7 +117,7 @@ export function useChessSocket():socketInfo {
         client.activate();
         clientRef.current = client;
         return () => {
-            client.deactivate();
+            client.deactivate().catch((err) => {console.error(err)});
         };
 
     }, []);
