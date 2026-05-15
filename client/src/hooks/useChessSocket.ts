@@ -142,7 +142,7 @@ export function useChessSocket():socketInfo {
                 body: '',
             });
         });
-    })
+    }, []);
 
 
     //other components will call this to send a human move to the backend
