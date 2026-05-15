@@ -18,7 +18,7 @@ public final class GameState implements StateAPI {
     private final Board board;
     private final Player currentTurn;
     private final List<Player> players;
-    private Set<Move> cachedLegalMoves = new HashSet<>();
+    private Set<Move> cachedLegalMoves = null;
     private Status cachedGameStatus = null;
 
     public GameState(Board board, Player currentTurn, List<Player> players) {
@@ -56,7 +56,7 @@ public final class GameState implements StateAPI {
     public @NonNull Set<Move> getLegalMoves() {
 
         //only calculate moves once to save computation
-        if (!this.cachedLegalMoves.isEmpty()) {
+        if (this.cachedLegalMoves != null) {
             return this.cachedLegalMoves;
         }
         

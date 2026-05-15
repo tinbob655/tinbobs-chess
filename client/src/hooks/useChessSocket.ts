@@ -101,13 +101,7 @@ export function useChessSocket():socketInfo {
                     const pending = pendingTargets.current.get(res.id);
 
                     if (pending) {
-                        if (res.targets.length >= 1) {
-
-                            pending.resolve(res.targets);
-                        }
-                        else {
-                            pending.reject(res.reason ?? "Invalid move");
-                        }
+                        pending.resolve(res.targets);
                     }
 
                     pendingTargets.current.delete(res.id);
