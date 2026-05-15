@@ -84,13 +84,13 @@ public class GameController {
 
         try {
             Position pos = new Position(incoming.squareIndex());
-            Board board = this.gameEngine.getState().board();
-            Set<Move> moves = board.getPieceAt(pos).orElseThrow().getLegalMoves(pos, board);
+            Set<Move> validMoves = this.gameEngine.getState().getLegalMoves();
 
-            int[] targets =  moves.parallelStream()
-                    .mapToInt(move -> move.to().toArrayIndex())
+            int[] targets = validMoves.stream()
+                    .filter(m -> m.from().equals(pos))
+                    .mapToInt(m -> m.to().toArrayIndex())
                     .toArray();
-
+            
             //send the response back to the frontend
             res = new TargetsResult(targets, incoming.id(), null);
         }
