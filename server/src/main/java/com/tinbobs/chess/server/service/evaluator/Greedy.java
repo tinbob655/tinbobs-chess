@@ -3,6 +3,7 @@ package com.tinbobs.chess.server.service.evaluator;
 import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
+import com.tinbobs.chess.server.model.status.Status;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -21,25 +22,21 @@ public final class Greedy implements Evaluator {
     @Override
     public int staticEvaluate(GameState state, Colour perspective) {
 
-        Set<Move> legalMoves = state.getLegalMoves();
-        return legalMoves.parallelStream()
-                .mapToInt(move -> {
+        //checkmate is the goal
+        if (state.getStatus() == Status.CHECKMATE) {
+            return (state.currentTurn().getColour() == perspective ? Integer.MAX_VALUE : Integer.MIN_VALUE) / 2;
+        }
 
-                    //pretend we did the move
-                    GameState newState = state.advance(move);
+        int res = 0;
 
-                    //reward own material, punish enemy material
-                    int res = newState.board().getGrid().stream()
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .mapToInt(piece -> piece.getColour() == perspective ? piece.getValue() : -piece.getValue())
-                            .sum();
+        //reward / punish for existing pieces
+        res += state.board().getGrid().parallelStream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .mapToInt(piece -> piece.getColour() == perspective ? piece.getValue() : -piece.getValue())
+                .sum();
 
-                    //if we have more available moves then that is good
-                    res += newState.getLegalMoves().size();
-
-                    return res;
-                }).sum();
+        return res;
     }
 
     @Override

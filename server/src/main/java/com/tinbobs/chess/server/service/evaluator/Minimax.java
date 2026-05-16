@@ -4,6 +4,7 @@ import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
+import com.tinbobs.chess.server.model.status.Status;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -27,6 +28,11 @@ public final class Minimax implements Evaluator {
     //gives a state a score from a player's perspective
     @Override
     public int staticEvaluate(GameState state, Colour perspective) {
+
+        //checkmate is the goal
+        if (state.getStatus() == Status.CHECKMATE) {
+            return (state.currentTurn().getColour() == perspective ? Integer.MAX_VALUE : Integer.MIN_VALUE) / 2;
+        }
 
         int res = 0;
         List<Optional<Piece>> grid = state.board().getGrid();
