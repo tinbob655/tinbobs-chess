@@ -22,7 +22,12 @@ import java.util.concurrent.CompletableFuture;
 
 public final class GameEngine implements Engine_API {
 
+    //information for blunder detection
     private static final int BLUNDER_THRESHOLD = 300;
+    private static final int DECISIVE_POSITION_THRESHOLD = 600;
+    private static final int FORCED_MOVE_COUNT = 2;
+    private static final int BLUNDER_MINIMAX_DEPTH = 3;
+
     private GameState state;
     private final List<Player> players = new ArrayList<>();
 
@@ -40,6 +45,7 @@ public final class GameEngine implements Engine_API {
 
 
     //totally resets the game
+    @Override
     public void reset() {
 
         //create new state
@@ -51,10 +57,14 @@ public final class GameEngine implements Engine_API {
         GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
         this.messagingTemplate.convertAndSend("/topic/status", status);
 
+        //clear the transposition table
+        this.evaluator.clearTranspositionTable();
+
         //log
         System.out.println("Game successfully reset!");
     }
 
+    @Override
     public void startGame() {
 
         //do not start if we don't have 2 players
@@ -79,10 +89,12 @@ public final class GameEngine implements Engine_API {
         });
     }
 
+    @Override
     public GameState getState() {
         return this.state;
     }
 
+    @Override
     public void addPlayer(Player player) {
 
         //refuse to add more than 2 players
@@ -91,12 +103,11 @@ public final class GameEngine implements Engine_API {
         }
     }
 
+    @Override
     public void turn() {
 
-        //work out the score before the player makes a move
+        //get a move
         Player currentPlayer = this.state.currentTurn();
-        int scoreBeforeTurn = this.evaluator.evaluate(this.state, currentPlayer.getColour());
-
         Move move = currentPlayer.turn(this.state);
 
         //validate the move
@@ -109,9 +120,10 @@ public final class GameEngine implements Engine_API {
         Optional<Piece> targetPiece = this.state.board().getPieceAt(move.to());
 
         //do the move
+        GameState oldState = this.state;
         this.state = this.state.advance(move);
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
-        this.checkForBlunder(currentPlayer, scoreBeforeTurn);
+        this.checkForBlunder(currentPlayer, oldState, this.state);
 
         //the move may have been a capture move
         //take it from the next player's pieces and add it to the current player's captured pieces
@@ -133,16 +145,29 @@ public final class GameEngine implements Engine_API {
         this.messagingTemplate.convertAndSend("/topic/status", status);
     }
 
-    private void checkForBlunder(Player currentPlayer, int scoreBeforeTurn) {
+    private void checkForBlunder(Player currentPlayer, GameState stateBeforeMove, GameState stateAfterMove) {
 
-        //work out the score after we do the move and compare to detect a blunder
-        GameState stateAfterOpponentBestReply = this.state.getLegalMoves().stream()
-                .map(this.state::advance)
-                .min(Comparator.comparingInt(s -> evaluator.evaluate(s, currentPlayer.getColour())))
-                .orElse(this.state); // fallback if no moves (game over)
 
-        int scoreAfterTurn = evaluator.evaluate(stateAfterOpponentBestReply, currentPlayer.getColour());
-        if (scoreAfterTurn < scoreBeforeTurn - BLUNDER_THRESHOLD) {
+        Set<Move> availableMoves = stateBeforeMove.getLegalMoves();
+
+        //if the move is forced then don't punish the player
+        if (availableMoves.size() <= FORCED_MOVE_COUNT) {
+            return;
+        }
+
+        //give a score to the state before and after the move
+        int scoreBeforeMove = 0;
+        int scoreAfterMove = 0;
+        scoreBeforeMove = this.evaluator.minimax(stateBeforeMove, BLUNDER_MINIMAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, currentPlayer.getColour());
+        scoreAfterMove = this.evaluator.minimax(stateAfterMove, BLUNDER_MINIMAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, currentPlayer.getColour());
+
+        //if a position was already winning or loosing then don't punish twice
+        if (Math.abs(scoreBeforeMove) > DECISIVE_POSITION_THRESHOLD) {
+            return;
+        }
+
+        //blunders happen if the evaluation drops
+        if (scoreAfterMove < scoreBeforeMove - BLUNDER_THRESHOLD) {
             currentPlayer.addBlunder();
         }
     }
