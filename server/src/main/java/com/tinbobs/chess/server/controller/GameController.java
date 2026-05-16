@@ -10,7 +10,7 @@ import com.tinbobs.chess.server.model.player.Human;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.controller.DTO.MoveResult;
 import com.tinbobs.chess.server.model.state.RawMove;
-import com.tinbobs.chess.server.service.MoveParser;
+import com.tinbobs.chess.server.service.parser.MoveParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -46,7 +46,7 @@ public class GameController {
 
         //log receipt of the move
         try {
-            Move move = moveParser.toMove(raw);
+            Move move = moveParser.decode(raw);
             System.out.println("Received move: " + move);
 
             Set<Move> validMoves = gameEngine.getState().getLegalMoves();

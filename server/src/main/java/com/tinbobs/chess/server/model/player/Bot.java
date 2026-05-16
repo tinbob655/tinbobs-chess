@@ -3,20 +3,18 @@ package com.tinbobs.chess.server.model.player;
 import com.tinbobs.chess.server.model.piece.*;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
-import com.tinbobs.chess.server.service.PositionEvaluator;
+import com.tinbobs.chess.server.service.evaluator.Evaluator;
+import com.tinbobs.chess.server.service.evaluator.MinimaxEvaluator;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 public final class Bot extends Player {
 
     @Autowired
-    private PositionEvaluator evaluator;
-
-    private static final int MINIMAX_DEPTH = 4;
+    private Evaluator evaluator;
 
 
     public Bot(String name, Colour colour) {
@@ -44,7 +42,7 @@ public final class Bot extends Player {
 
             //pretend we did the move
             GameState newState = state.advance(move);
-            int moveScore = this.evaluator.minimax(newState, MINIMAX_DEPTH -1, Integer.MIN_VALUE, Integer.MAX_VALUE, this.getColour());
+            int moveScore = this.evaluator.evaluate(newState, this.getColour());
 
             //keep track of the best move
             if (moveScore > bestScore) {

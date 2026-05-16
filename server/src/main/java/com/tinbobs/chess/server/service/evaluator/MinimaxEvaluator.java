@@ -1,22 +1,95 @@
-package com.tinbobs.chess.server.service;
+package com.tinbobs.chess.server.service.evaluator;
 
 import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public final class PositionEvaluator {
+@Qualifier("minimax")
+@Primary
+public final class MinimaxEvaluator implements Evaluator {
+
+
+    private static final int MINIMAX_DEPTH = 4;
 
     //transposition table stuff
     private final Map<Long, TTRow> transpositionTable = new HashMap<>();
     private enum TTFlag {PERFECT, MAXIMUM, MINIMUM}
     private record TTRow(int score, int depth, TTFlag flag) {}
+
+    @Override
+    public int evaluate(GameState state, Colour perspective) {
+        return this.minimax(state, MINIMAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, perspective);
+    }
+
+    //gives a state a score from a player's perspective
+    @Override
+    public int staticEvaluate(GameState state, Colour perspective) {
+
+        int res = 0;
+        List<Optional<Piece>> grid = state.board().getGrid();
+
+        for (int i = 0; i < 64; i++) {
+
+            if (grid.get(i).isEmpty()) continue;
+            Piece piece = grid.get(i).get();
+
+            //our piece: add. Opponent's piece: subtract
+            int sign = piece.getColour() == perspective ? 1 : -1;
+            int material = piece.getValue() * 100;
+
+            //tables are written from white's POV so need to flip if we are black
+            boolean pieceIsWhite = piece.getColour() == Colour.WHITE;
+            boolean perspectiveIsWhite = perspective == Colour.WHITE;
+            int tableIndex = (pieceIsWhite == perspectiveIsWhite) ? i : mirror(i);
+            int positional = piece.getPieceTable()[tableIndex];
+
+            res += sign * (material + positional);
+        }
+
+        //a piece with more available moves is in a better position
+        int mobilityBonus = state.currentTurn().getColour() == perspective ? 5 : -5;
+        res += mobilityBonus * state.getLegalMoves().size();
+
+        return res;
+    }
+
+    //gets moves in order of predicted best to worst
+    @Override
+    public @NonNull Queue<Move> getSortedMoves(GameState state) {
+
+        Comparator<Move> moveComparator = Comparator.comparingInt((Move move) -> {
+
+            int score = 0;
+            Optional<Piece> victim = state.board().getPieceAt(move.to());
+            Optional<Piece> attacker = state.board().getPieceAt(move.from());
+
+            if (victim.isPresent() && attacker.isPresent()) {
+                score += (victim.get().getValue() * 100) - attacker.get().getValue();
+            }
+            return score;
+
+        }).reversed();
+
+        Queue<Move> sortedMoves = new PriorityQueue<>(moveComparator);
+        Set<Move> legalMoves = state.getLegalMoves();
+        sortedMoves.addAll(legalMoves);
+        return sortedMoves;
+    }
+
+    //transposition table will be cleared on a reset
+    @Override
+    public void reset() {
+        transpositionTable.clear();
+    }
 
     //evaluates state upto a depth
     public int minimax(GameState state, int depth, int alpha, int beta, Colour perspective) {
@@ -24,7 +97,7 @@ public final class PositionEvaluator {
 
         //we might be done
         if (state.isGameOver()) {
-            return this.evaluate(state, perspective);
+            return this.staticEvaluate(state, perspective);
         }
         else if (depth <= 0) {
             return this.quiescence(state, alpha, beta, perspective);
@@ -109,7 +182,7 @@ public final class PositionEvaluator {
 
 
         //if we choose not to pieceTaken we get this score
-        int standPat = this.evaluate(state, perspective);
+        int standPat = this.staticEvaluate(state, perspective);
 
         if (state.currentTurn().getColour() == perspective) {
 
@@ -153,64 +226,6 @@ public final class PositionEvaluator {
             }
         }
         return res;
-    }
-
-    //gives a state a score from a player's perspective
-    public int evaluate(GameState state, Colour perspective) {
-
-        int res = 0;
-        List<Optional<Piece>> grid = state.board().getGrid();
-
-        for (int i = 0; i < 64; i++) {
-
-            if (grid.get(i).isEmpty()) continue;
-            Piece piece = grid.get(i).get();
-
-            //our piece: add. Opponent's piece: subtract
-            int sign = piece.getColour() == perspective ? 1 : -1;
-            int material = piece.getValue() * 100;
-
-            //tables are written from white's POV so need to flip if we are black
-            boolean pieceIsWhite = piece.getColour() == Colour.WHITE;
-            boolean perspectiveIsWhite = perspective == Colour.WHITE;
-            int tableIndex = (pieceIsWhite == perspectiveIsWhite) ? i : mirror(i);
-            int positional = piece.getPieceTable()[tableIndex];
-
-            res += sign * (material + positional);
-        }
-
-        //a piece with more available moves is in a better position
-        int mobilityBonus = state.currentTurn().getColour() == perspective ? 5 : -5;
-        res += mobilityBonus * state.getLegalMoves().size();
-
-        return res;
-    }
-
-    //gets moves in order of predicted best to worst
-    public @NonNull Queue<Move> getSortedMoves(GameState state) {
-
-        Comparator<Move> moveComparator = Comparator.comparingInt((Move move) -> {
-
-            int score = 0;
-            Optional<Piece> victim = state.board().getPieceAt(move.to());
-            Optional<Piece> attacker = state.board().getPieceAt(move.from());
-
-            if (victim.isPresent() && attacker.isPresent()) {
-                score += (victim.get().getValue() * 100) - attacker.get().getValue();
-            }
-            return score;
-
-        }).reversed();
-
-        Queue<Move> sortedMoves = new PriorityQueue<>(moveComparator);
-        Set<Move> legalMoves = state.getLegalMoves();
-        sortedMoves.addAll(legalMoves);
-        return sortedMoves;
-    }
-
-    //transposition table will be cleared on a reset
-    public void clearTranspositionTable() {
-        transpositionTable.clear();
     }
 
     //helper to flip a table

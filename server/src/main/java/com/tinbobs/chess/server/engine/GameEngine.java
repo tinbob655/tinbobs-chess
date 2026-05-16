@@ -10,11 +10,12 @@ import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.model.status.GameStatus;
-import com.tinbobs.chess.server.service.BlunderDetector;
-import com.tinbobs.chess.server.service.CreateFrontendStatus;
-import com.tinbobs.chess.server.service.MoveParser;
-import com.tinbobs.chess.server.service.PositionEvaluator;
+import com.tinbobs.chess.server.service.blunderDetector.BlunderDetector;
+import com.tinbobs.chess.server.service.evaluator.Evaluator;
+import com.tinbobs.chess.server.service.statusCreator.CreateFrontendStatus;
+import com.tinbobs.chess.server.service.parser.MoveParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.*;
@@ -36,7 +37,8 @@ public final class GameEngine implements Engine_API {
     private CreateFrontendStatus statusCreator;
 
     @Autowired
-    private PositionEvaluator evaluator;
+    @Qualifier("minimax")
+    private Evaluator evaluator;
 
     @Autowired
     private BlunderDetector blunderDetector;
@@ -56,7 +58,7 @@ public final class GameEngine implements Engine_API {
         this.messagingTemplate.convertAndSend("/topic/status", status);
 
         //clear the transposition table
-        this.evaluator.clearTranspositionTable();
+        this.evaluator.reset();
 
         //log
         System.out.println("Game successfully reset!");
@@ -120,8 +122,13 @@ public final class GameEngine implements Engine_API {
         //do the move
         GameState oldState = this.state;
         this.state = this.state.advance(move);
-        this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
-        this.blunderDetector.checkForBlunder(currentPlayer, oldState, this.state);
+        this.messagingTemplate.convertAndSend("/topic/game", moveParser.encode(move));
+
+        //deal with blunders
+        boolean isBlunder = this.blunderDetector.checkForBlunder(currentPlayer, oldState, this.state);
+        if (isBlunder) {
+            currentPlayer.addBlunder();
+        }
 
         //the move may have been a capture move
         //take it from the next player's pieces and add it to the current player's captured pieces

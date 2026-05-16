@@ -1,4 +1,4 @@
-package com.tinbobs.chess.server.service;
+package com.tinbobs.chess.server.service.parser;
 
 
 import com.tinbobs.chess.server.model.board.Position;
@@ -7,10 +7,10 @@ import com.tinbobs.chess.server.model.state.RawMove;
 import org.springframework.stereotype.Service;
 
 @Service
-public final class MoveParser {
+public final class MoveParser implements TwoWayParser<RawMove, Move> {
 
     //"e2" -> Position('e', 2)
-    public Move toMove(RawMove raw) {
+    public Move decode(RawMove raw) {
 
         String from = raw.from();
         String to = raw.to();
@@ -22,7 +22,7 @@ public final class MoveParser {
     }
 
     //Position('e', 2) -> "e2"
-    public RawMove toRaw(Move move) {
+    public RawMove encode(Move move) {
 
         Position from = move.from();
         Position to = move.to();

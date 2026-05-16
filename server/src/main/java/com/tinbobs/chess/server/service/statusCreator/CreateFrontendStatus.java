@@ -1,4 +1,4 @@
-package com.tinbobs.chess.server.service;
+package com.tinbobs.chess.server.service.statusCreator;
 
 
 import com.tinbobs.chess.server.model.piece.Colour;
