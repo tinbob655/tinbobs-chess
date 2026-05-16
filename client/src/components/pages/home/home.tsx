@@ -237,7 +237,7 @@ export default function Home():React.ReactElement {
 
 function getStatusMessage(gameStatus: gameStatus, waitingForBotMove: boolean): string {
     switch (gameStatus) {
-        case 'CHECK': return waitingForBotMove ? "You put the bot's king in check!" : "The bot has put your king in check!";
+        case 'CHECK': return !waitingForBotMove ? "You put the bot's king in check!" : "The bot has put your king in check!";
         default: return '';
     }
 }
