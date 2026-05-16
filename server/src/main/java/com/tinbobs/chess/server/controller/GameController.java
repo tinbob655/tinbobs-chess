@@ -21,23 +21,24 @@ import java.util.Set;
 @Controller
 public class GameController {
 
-    @Autowired
-    private GameEngine gameEngine;
+    private final GameEngine engine;
+    private final Human humanPlayer;
+    private final MoveParser moveParser;
+    private final GameEventPublisher publisher;
 
     @Autowired
-    private Human humanPlayer;
-
-    @Autowired
-    private MoveParser moveParser;
-
-    @Autowired
-    private GameEventPublisher publisher;
+    public GameController(GameEngine engine, Human human, MoveParser parser, GameEventPublisher publisher) {
+        this.engine = engine;
+        this.humanPlayer = human;
+        this.moveParser = parser;
+        this.publisher = publisher;
+    }
 
     //start the game when told
     @MessageMapping("/start")
     public void startGame() {
         System.out.println("Game start signal received");
-        gameEngine.startGame();
+        this.engine.startGame();
     }
 
     //move received from frontend
@@ -49,7 +50,7 @@ public class GameController {
             Move move = moveParser.decode(raw);
             System.out.println("Received move: " + move);
 
-            Set<Move> validMoves = gameEngine.getState().getLegalMoves();
+            Set<Move> validMoves = this.engine.getState().getLegalMoves();
             if (!validMoves.contains(move)) {
                 throw new IllegalMoveException(move);
             }
@@ -72,7 +73,7 @@ public class GameController {
     //frontend says to reset the game
     @MessageMapping("/refresh")
     public void refresh() {
-        this.gameEngine.reset();
+        this.engine.reset();
     }
 
     //frontend has asked for the legal moves of a piece at a location
@@ -83,7 +84,7 @@ public class GameController {
 
         try {
             Position pos = new Position(incoming.squareIndex());
-            Set<Move> validMoves = this.gameEngine.getState().getLegalMoves();
+            Set<Move> validMoves = this.engine.getState().getLegalMoves();
 
             int[] targets = validMoves.stream()
                     .filter(m -> m.from().equals(pos))

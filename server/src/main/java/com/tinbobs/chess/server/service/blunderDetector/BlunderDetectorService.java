@@ -3,7 +3,7 @@ package com.tinbobs.chess.server.service.blunderDetector;
 import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
-import com.tinbobs.chess.server.service.evaluator.Minimax;
+import com.tinbobs.chess.server.service.evaluator.Evaluator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +12,13 @@ import java.util.Set;
 @Service
 public final class BlunderDetectorService implements BlunderDetector {
 
+    private final Evaluator evaluator;
+
     @Autowired
-    private Minimax evaluator;
+    public BlunderDetectorService(Evaluator evaluator) {
+        this.evaluator = evaluator;
+    }
+
 
     //information for blunder detection
     private static final int BLUNDER_THRESHOLD = 300;

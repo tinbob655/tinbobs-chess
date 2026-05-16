@@ -15,7 +15,6 @@ import com.tinbobs.chess.server.service.evaluator.Evaluator;
 import com.tinbobs.chess.server.service.publisher.GameEventPublisher;
 import com.tinbobs.chess.server.service.statusCreator.CreateFrontendStatus;
 import com.tinbobs.chess.server.service.parser.MoveParser;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -26,20 +25,20 @@ public final class GameEngine implements Engine_API {
     private GameState state;
     private final List<Player> players = new ArrayList<>();
 
-    @Autowired
-    private MoveParser moveParser;
+    private final MoveParser moveParser;
+    private final CreateFrontendStatus statusCreator;
+    private final BlunderDetector blunderDetector;
+    private final GameEventPublisher publisher;
+    private final Evaluator evaluator;
 
-    @Autowired
-    private CreateFrontendStatus statusCreator;
 
-    @Autowired
-    private Evaluator evaluator;
-
-    @Autowired
-    private BlunderDetector blunderDetector;
-
-    @Autowired
-    private GameEventPublisher publisher;
+    public GameEngine(MoveParser moveParser, CreateFrontendStatus statusCreator, BlunderDetector blunderDetector, GameEventPublisher publisher, Evaluator evaluator) {
+        this.moveParser = moveParser;
+        this.statusCreator = statusCreator;
+        this.blunderDetector = blunderDetector;
+        this.publisher = publisher;
+        this.evaluator = evaluator;
+    }
 
 
     //totally resets the game
