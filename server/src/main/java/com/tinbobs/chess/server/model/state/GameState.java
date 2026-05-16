@@ -21,12 +21,25 @@ public final class GameState implements StateAPI {
     private Set<Move> cachedLegalMoves = null;
     private Status cachedGameStatus = null;
     private final long zorbristHash;
+    private final Map<Long, Integer> history;
 
+    //create a blank state (no pre-existing history)
     public GameState(Board board, Player currentTurn, List<Player> players) {
         this.board = board;
         this.currentTurn = currentTurn;
         this.players = players;
         this.zorbristHash = this.computeZobristHash();
+        this.history = new HashMap<>();
+        this.history.put(this.zorbristHash, 1);
+    }
+    //create a state with a pre-existing history
+    private GameState(Board board, Player currentTurn, List<Player> players, Map<Long, Integer> previousHistory) {
+        this.board = board;
+        this.currentTurn = currentTurn;
+        this.players = players;
+        this.zorbristHash = this.computeZobristHash();
+        this.history = new HashMap<>(previousHistory);
+        this.history.merge(this.zorbristHash, 1, Integer::sum);
     }
 
     //advances the game state
@@ -55,7 +68,7 @@ public final class GameState implements StateAPI {
             newBoard.setPieceAt(move.to(), new Queen(Colour.BLACK));
         }
 
-        return new GameState(newBoard, nextPlayer, players);
+        return new GameState(newBoard, nextPlayer, players, this.history);
     }
 
     //getters
@@ -163,6 +176,9 @@ public final class GameState implements StateAPI {
 
         //a draw happens if we don't have enough material
         if (isInsufficientMaterial()) return Status.DRAW;
+
+        //a draw also happens if we repeat the same state three times
+        if (this.history.getOrDefault(this.zorbristHash, 0) >= 3) return Status.DRAW;
 
         return Status.ONGOING;
     }
