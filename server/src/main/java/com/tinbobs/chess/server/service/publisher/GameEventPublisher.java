@@ -3,7 +3,7 @@ package com.tinbobs.chess.server.service.publisher;
 
 import com.tinbobs.chess.server.controller.DTO.MoveResult;
 import com.tinbobs.chess.server.controller.DTO.TargetsResult;
-import com.tinbobs.chess.server.model.state.RawMove;
+import com.tinbobs.chess.server.controller.DTO.RawMove;
 import com.tinbobs.chess.server.model.status.GameStatus;
 import com.tinbobs.chess.server.model.status.Status;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,7 +3,7 @@ package com.tinbobs.chess.server.service.parser;
 
 import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.state.Move;
-import com.tinbobs.chess.server.model.state.RawMove;
+import com.tinbobs.chess.server.controller.DTO.RawMove;
 import org.springframework.stereotype.Service;
 
 @Service

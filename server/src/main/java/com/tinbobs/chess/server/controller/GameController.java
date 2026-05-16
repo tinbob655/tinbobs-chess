@@ -9,7 +9,7 @@ import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.player.Human;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.controller.DTO.MoveResult;
-import com.tinbobs.chess.server.model.state.RawMove;
+import com.tinbobs.chess.server.controller.DTO.RawMove;
 import com.tinbobs.chess.server.service.parser.MoveParser;
 import com.tinbobs.chess.server.service.publisher.GameEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
