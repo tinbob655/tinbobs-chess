@@ -1,15 +1,14 @@
 package com.tinbobs.chess.server.controller;
 
 
-import com.tinbobs.chess.server.controller.records.TargetsResult;
-import com.tinbobs.chess.server.controller.records.ValidMoveRequest;
+import com.tinbobs.chess.server.controller.DTO.TargetsResult;
+import com.tinbobs.chess.server.controller.DTO.ValidMoveRequest;
 import com.tinbobs.chess.server.engine.GameEngine;
 import com.tinbobs.chess.server.model.IllegalMoveException;
-import com.tinbobs.chess.server.model.board.Board;
 import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.player.Human;
 import com.tinbobs.chess.server.model.state.Move;
-import com.tinbobs.chess.server.controller.records.MoveResult;
+import com.tinbobs.chess.server.controller.DTO.MoveResult;
 import com.tinbobs.chess.server.model.state.RawMove;
 import com.tinbobs.chess.server.service.MoveParser;
 import org.springframework.beans.factory.annotation.Autowired;
