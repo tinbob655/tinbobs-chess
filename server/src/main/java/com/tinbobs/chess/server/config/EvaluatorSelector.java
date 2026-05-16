@@ -1,5 +1,6 @@
 package com.tinbobs.chess.server.config;
 
+import com.tinbobs.chess.server.ApplicationConstants;
 import com.tinbobs.chess.server.service.evaluator.Evaluator;
 import com.tinbobs.chess.server.service.evaluator.Greedy;
 import com.tinbobs.chess.server.service.evaluator.Minimax;
@@ -31,11 +32,11 @@ public class EvaluatorSelector {
             return EvaluatorOption.RANDOM;
         }
 
-        //we need 2GB to run minimax
+        //we need to make sure we have enough memory to store the transposition table
         long maxMemory = Runtime.getRuntime().maxMemory();
-        long twoGigabytes = 2L * 1024 * 1024 * 1024;
+        long maxSize = ApplicationConstants.transpositionTableMaxSize;
 
-        if (maxMemory >= twoGigabytes) {
+        if (maxMemory >= maxSize) {
             System.out.println("MINIMAX EVALUATOR SELECTED.");
             return EvaluatorOption.MINIMAX;
         }
