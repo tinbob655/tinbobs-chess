@@ -12,10 +12,10 @@ import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.model.status.GameStatus;
 import com.tinbobs.chess.server.service.blunderDetector.BlunderDetector;
 import com.tinbobs.chess.server.service.evaluator.Evaluator;
+import com.tinbobs.chess.server.service.publisher.GameEventPublisher;
 import com.tinbobs.chess.server.service.statusCreator.CreateFrontendStatus;
 import com.tinbobs.chess.server.service.parser.MoveParser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -25,9 +25,6 @@ public final class GameEngine implements Engine_API {
 
     private GameState state;
     private final List<Player> players = new ArrayList<>();
-
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
     private MoveParser moveParser;
@@ -41,6 +38,9 @@ public final class GameEngine implements Engine_API {
     @Autowired
     private BlunderDetector blunderDetector;
 
+    @Autowired
+    private GameEventPublisher publisher;
+
 
     //totally resets the game
     @Override
@@ -53,7 +53,7 @@ public final class GameEngine implements Engine_API {
 
         //send new status to front
         GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
-        this.messagingTemplate.convertAndSend("/topic/status", status);
+        this.publisher.publish(status);
 
         //clear the transposition table
         this.evaluator.reset();
@@ -83,7 +83,7 @@ public final class GameEngine implements Engine_API {
             }
 
             //the game is over, tell the frontend
-            this.messagingTemplate.convertAndSend("/topic/gameOver", this.state.getStatus());
+            this.publisher.publish(this.state.getStatus());
         });
     }
 
@@ -122,7 +122,7 @@ public final class GameEngine implements Engine_API {
         //do the move
         GameState oldState = this.state;
         this.state = this.state.advance(move);
-        this.messagingTemplate.convertAndSend("/topic/game", moveParser.encode(move));
+        this.publisher.publish(this.moveParser.encode(move));
 
         //deal with blunders
         boolean isBlunder = this.blunderDetector.checkForBlunder(currentPlayer, oldState, this.state);
@@ -147,6 +147,6 @@ public final class GameEngine implements Engine_API {
 
         //send the new game state to the frontend
         GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
-        this.messagingTemplate.convertAndSend("/topic/status", status);
+        this.publisher.publish(status);
     }
 }

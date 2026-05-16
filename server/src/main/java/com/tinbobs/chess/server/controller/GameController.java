@@ -11,9 +11,9 @@ import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.controller.DTO.MoveResult;
 import com.tinbobs.chess.server.model.state.RawMove;
 import com.tinbobs.chess.server.service.parser.MoveParser;
+import com.tinbobs.chess.server.service.publisher.GameEventPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.util.Set;
@@ -31,7 +31,7 @@ public class GameController {
     private MoveParser moveParser;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private GameEventPublisher publisher;
 
     //start the game when told
     @MessageMapping("/start")
@@ -57,15 +57,15 @@ public class GameController {
             humanPlayer.submitMove(move);
 
             //tell the frontend the move was accepted
-            messagingTemplate.convertAndSend("/topic/moveResult",
-                    new MoveResult(true, raw.correlationID(), null));
+            MoveResult moveResult = new MoveResult(true, raw.correlationID(), null);
+            this.publisher.publish(moveResult);
 
         }
         catch (IllegalMoveException e) {
 
             //tell the frontend that the move was not accepted
-            messagingTemplate.convertAndSend("/topic/moveResult",
-                    new MoveResult(false, raw.correlationID(), e.getMessage()));
+            MoveResult moveResult = new MoveResult(false, raw.correlationID(), e.getMessage());
+            this.publisher.publish(moveResult);
         }
     }
 
@@ -99,6 +99,6 @@ public class GameController {
             res = new TargetsResult(new int[]{}, incoming.id(), e.getMessage());
         }
 
-        this.messagingTemplate.convertAndSend("/topic/validMoveTargets", res);
+        this.publisher.publish(res);
     }
 }
