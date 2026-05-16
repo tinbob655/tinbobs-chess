@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Service
 @Qualifier("minimax")
 @Primary
-public final class MinimaxEvaluator implements Evaluator {
+public final class Minimax implements Evaluator {
 
 
     private static final int MINIMAX_DEPTH = 4;

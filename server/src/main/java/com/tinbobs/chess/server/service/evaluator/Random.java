@@ -11,9 +11,9 @@ import java.util.*;
 
 @Service
 @Qualifier("random")
-public final class RandomEvaluator implements Evaluator {
+public final class Random implements Evaluator {
 
-    private static final Random random = new Random();
+    private static final java.util.Random random = new java.util.Random();
 
 
     @Override

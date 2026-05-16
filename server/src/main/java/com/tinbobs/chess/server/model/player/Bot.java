@@ -4,7 +4,6 @@ import com.tinbobs.chess.server.model.piece.*;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.service.evaluator.Evaluator;
-import com.tinbobs.chess.server.service.evaluator.MinimaxEvaluator;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 
