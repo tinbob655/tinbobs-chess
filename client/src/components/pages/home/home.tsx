@@ -2,15 +2,16 @@ import React, { useState, useEffect} from 'react';
 import { useChessSocket } from '../../../hooks/useChessSocket';
 import ChessBoard from './chessBoard';
 import PlayerInfo from './playerInfo';
+import Thinking from './thinking';
 
+import squareToIndex from '../../../functions/squareToIndex';
 import applyMove from '../../../functions/applyMove';
 import createDefaultBoard from '../../../functions/createDefaultBoard';
 
 import type { BoardState } from '../../../types/chessObjects';
 import type socketInfo from '../../../types/socketInfo';
 import type Move from '../../../types/move';
-import Thinking from './thinking';
-import squareToIndex from '../../../functions/squareToIndex';
+import type {gameStatus} from "../../../types/status";
 
 
 export default function Home():React.ReactElement {
@@ -22,6 +23,8 @@ export default function Home():React.ReactElement {
     const [invalidMoveMessage, setInvalidMoveMessage] = useState<string>('');
     const [validMoveTargets, setValidMoveTargets] = useState<number[]>([]);
     const [gameOverMessage, setGameOverMessage] = useState<string>('');
+
+    const statusMessage = getStatusMessage(status.gameStatus, waitingForBotMove)
 
     //when we are connected, start the game
     useEffect(() => {
@@ -141,9 +144,12 @@ export default function Home():React.ReactElement {
                             </div>
 
                             {/*invalid move message*/}
-                            <div id="invalidMoveMessageWrapper">
-                                <p style={{height: '20px'}}>
+                            <div id="gameMessageWrapper">
+                                <p style={{height: '1lh'}}>
                                     {invalidMoveMessage}
+                                </p>
+                                <p style={{height: '1lh'}}>
+                                    {statusMessage}
                                 </p>
                             </div>
                         </div>
@@ -228,3 +234,10 @@ export default function Home():React.ReactElement {
         }
     }
 };
+
+function getStatusMessage(gameStatus: gameStatus, waitingForBotMove: boolean): string {
+    switch (gameStatus) {
+        case 'CHECK': return waitingForBotMove ? "You put the bot's king in check!" : "The bot has put your king in check!";
+        default: return '';
+    }
+}
