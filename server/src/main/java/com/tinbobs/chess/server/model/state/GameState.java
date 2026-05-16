@@ -20,11 +20,13 @@ public final class GameState implements StateAPI {
     private final List<Player> players;
     private Set<Move> cachedLegalMoves = null;
     private Status cachedGameStatus = null;
+    private final long zorbristHash;
 
     public GameState(Board board, Player currentTurn, List<Player> players) {
         this.board = board;
         this.currentTurn = currentTurn;
         this.players = players;
+        this.zorbristHash = this.computeZobristHash();
     }
 
     //advances the game state
@@ -64,6 +66,10 @@ public final class GameState implements StateAPI {
     @Override
     public Player currentTurn() {
         return this.currentTurn;
+    }
+    @Override
+    public long getZorbristHash() {
+        return this.zorbristHash;
     }
 
     @Override
@@ -201,5 +207,11 @@ public final class GameState implements StateAPI {
         }
 
         return false;
+    }
+
+    private long computeZobristHash() {
+        long boardHash = ZobristTable.hash(this.board.getGrid());
+        long turnHash = (long) this.currentTurn.getColour().hashCode() * 0x9E3779B97F4A7C15L;
+        return boardHash ^ turnHash;
     }
 }

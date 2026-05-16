@@ -37,4 +37,10 @@ public final class RandomEV implements Evaluator {
 
         //don't need to do anything
     }
+
+    @Override
+    @NonNull
+    public Move bestMove(GameState state, Colour perspective) {
+        return state.getLegalMoves().stream().findAny().orElseThrow();
+    }
 }

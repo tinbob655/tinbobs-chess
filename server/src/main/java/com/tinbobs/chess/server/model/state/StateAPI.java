@@ -12,6 +12,7 @@ public interface StateAPI {
     //getters
     Board board();
     Player currentTurn();
+    long getZorbristHash();
 
     //equality
     boolean equals(Object o);

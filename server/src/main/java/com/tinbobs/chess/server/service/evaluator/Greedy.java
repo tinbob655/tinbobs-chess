@@ -64,4 +64,24 @@ public final class Greedy implements Evaluator {
     public void reset() {
         //don't need to do anything
     }
+
+    @Override
+    @NonNull
+    public Move bestMove(GameState state, Colour perspective) {
+
+        Set<Move> legalMoves = state.getLegalMoves();
+        Move bestMove = null;
+        int bestScore = Integer.MIN_VALUE;
+
+        for (Move move : legalMoves) {
+            int score = this.staticEvaluate(state.advance(move), perspective);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+        }
+
+        assert(bestMove != null);
+        return bestMove;
+    }
 }

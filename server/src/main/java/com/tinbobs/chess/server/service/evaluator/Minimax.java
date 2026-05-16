@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public final class Minimax implements Evaluator {
 
 
-    private static final int MINIMAX_DEPTH = 3;
+    private static final int MINIMAX_DEPTH = 4;
 
     //transposition table stuff
     private final Map<Long, TTRow> transpositionTable = new HashMap<>();
@@ -85,6 +85,33 @@ public final class Minimax implements Evaluator {
         transpositionTable.clear();
     }
 
+    @Override
+    @NonNull
+    public Move bestMove(GameState state, Colour perspective) {
+
+        //get the moves
+        Queue<Move> sortedMoves = getSortedMoves(state);
+        Move bestMove = sortedMoves.peek();
+
+        //do minimax
+        int alpha = Integer.MIN_VALUE;
+        int beta  = Integer.MAX_VALUE;
+        while (!sortedMoves.isEmpty()) {
+
+            Move move = sortedMoves.poll();
+            GameState next = state.advance(move);
+            int score = minimax(next, MINIMAX_DEPTH - 1, alpha, beta, perspective);
+
+            if (score > alpha) {
+                alpha = score;
+                bestMove = move;
+            }
+        }
+
+        assert(bestMove != null);
+        return bestMove;
+    }
+
     //evaluates state upto a depth
     public int minimax(GameState state, int depth, int alpha, int beta, Colour perspective) {
 
@@ -100,7 +127,7 @@ public final class Minimax implements Evaluator {
         int originalAlpha = alpha;
 
         //we may have seen this state before at a sufficient depth
-        long key = state.hashCode() ^ (perspective == Colour.WHITE ? 0xDEADBEEFL : 0xCAFEBABEL);
+        long key = state.getZorbristHash() ^ (perspective == Colour.WHITE ? 0xDEADBEEFL : 0xCAFEBABEL);
         TTRow cached = transpositionTable.get(key);
         if (cached != null && cached.depth() >= depth) {
 

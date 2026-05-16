@@ -22,36 +22,6 @@ public final class Bot extends Player {
 
     @NonNull
     public Move turn(GameState state) {
-
-        System.out.println("Bot is thinking...");
-
-        //get all possible move and sort them by suspected best
-        Queue<Move> sortedMoves = this.evaluator.getSortedMoves(state);
-
-        if (sortedMoves.isEmpty()) {
-            throw new IllegalStateException("No possible moves");
-        }
-
-        //do mini-max on each move
-        Move bestMove = sortedMoves.peek();
-        int bestScore = Integer.MIN_VALUE;
-        while (!sortedMoves.isEmpty()) {
-
-            Move move = sortedMoves.poll();
-
-            //pretend we did the move
-            GameState newState = state.advance(move);
-            int moveScore = this.evaluator.evaluate(newState, this.getColour());
-
-            //keep track of the best move
-            if (moveScore > bestScore) {
-                bestScore = moveScore;
-                bestMove = move;
-            }
-        }
-
-        System.out.println("Bot decided on a move: " + bestMove.toString());
-
-        return bestMove;
+        return this.evaluator.bestMove(state, this.getColour());
     }
 }
