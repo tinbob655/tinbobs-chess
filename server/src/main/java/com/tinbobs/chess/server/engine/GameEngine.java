@@ -10,6 +10,7 @@ import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.model.status.GameStatus;
+import com.tinbobs.chess.server.service.BlunderDetector;
 import com.tinbobs.chess.server.service.CreateFrontendStatus;
 import com.tinbobs.chess.server.service.MoveParser;
 import com.tinbobs.chess.server.service.PositionEvaluator;
@@ -21,12 +22,6 @@ import java.util.concurrent.CompletableFuture;
 
 
 public final class GameEngine implements Engine_API {
-
-    //information for blunder detection
-    private static final int BLUNDER_THRESHOLD = 300;
-    private static final int DECISIVE_POSITION_THRESHOLD = 600;
-    private static final int FORCED_MOVE_COUNT = 2;
-    private static final int BLUNDER_MINIMAX_DEPTH = 3;
 
     private GameState state;
     private final List<Player> players = new ArrayList<>();
@@ -42,6 +37,9 @@ public final class GameEngine implements Engine_API {
 
     @Autowired
     private PositionEvaluator evaluator;
+
+    @Autowired
+    private BlunderDetector blunderDetector;
 
 
     //totally resets the game
@@ -123,7 +121,7 @@ public final class GameEngine implements Engine_API {
         GameState oldState = this.state;
         this.state = this.state.advance(move);
         this.messagingTemplate.convertAndSend("/topic/game", moveParser.toRaw(move));
-        this.checkForBlunder(currentPlayer, oldState, this.state);
+        this.blunderDetector.checkForBlunder(currentPlayer, oldState, this.state);
 
         //the move may have been a capture move
         //take it from the next player's pieces and add it to the current player's captured pieces
@@ -143,32 +141,5 @@ public final class GameEngine implements Engine_API {
         //send the new game state to the frontend
         GameStatus status = this.statusCreator.createFrontendStatus(this.players, this.state);
         this.messagingTemplate.convertAndSend("/topic/status", status);
-    }
-
-    private void checkForBlunder(Player currentPlayer, GameState stateBeforeMove, GameState stateAfterMove) {
-
-
-        Set<Move> availableMoves = stateBeforeMove.getLegalMoves();
-
-        //if the move is forced then don't punish the player
-        if (availableMoves.size() <= FORCED_MOVE_COUNT) {
-            return;
-        }
-
-        //give a score to the state before and after the move
-        int scoreBeforeMove = 0;
-        int scoreAfterMove = 0;
-        scoreBeforeMove = this.evaluator.minimax(stateBeforeMove, BLUNDER_MINIMAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, currentPlayer.getColour());
-        scoreAfterMove = this.evaluator.minimax(stateAfterMove, BLUNDER_MINIMAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, currentPlayer.getColour());
-
-        //if a position was already winning or loosing then don't punish twice
-        if (Math.abs(scoreBeforeMove) > DECISIVE_POSITION_THRESHOLD) {
-            return;
-        }
-
-        //blunders happen if the evaluation drops
-        if (scoreAfterMove < scoreBeforeMove - BLUNDER_THRESHOLD) {
-            currentPlayer.addBlunder();
-        }
     }
 }
