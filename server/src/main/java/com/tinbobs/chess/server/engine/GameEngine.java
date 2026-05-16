@@ -115,6 +115,8 @@ public final class GameEngine implements Engine_API {
         if (!validMoves.contains(move)) {
             throw new IllegalMoveException(move);
         }
+
+        Piece movingPiece = this.state.board().getPieceAt(move.from()).orElseThrow();
         
         //save if this move was a capture move for later
         Optional<Piece> targetPiece = this.state.board().getPieceAt(move.to());
@@ -138,7 +140,7 @@ public final class GameEngine implements Engine_API {
         });
 
         //deal with pawn promotions
-        boolean wasPromotion = (this.state.board().getPieceAt(move.from()).orElse(null) instanceof Pawn)
+        boolean wasPromotion = (movingPiece instanceof Pawn)
                 && ((currentPlayer.getColour() == Colour.WHITE && move.to().y() == 8)
                 ||  (currentPlayer.getColour() == Colour.BLACK && move.to().y() == 1));
         if (wasPromotion) {
