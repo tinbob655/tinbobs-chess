@@ -4,14 +4,10 @@ import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 import org.jspecify.annotations.NonNull;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 
-@Service
-@Qualifier("random")
-public final class Random implements Evaluator {
+public final class RandomEV implements Evaluator {
 
     private static final java.util.Random random = new java.util.Random();
 

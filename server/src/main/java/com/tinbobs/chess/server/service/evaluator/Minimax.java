@@ -5,16 +5,10 @@ import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 import org.jspecify.annotations.NonNull;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service
-@Qualifier("minimax")
-@Primary
 public final class Minimax implements Evaluator {
 
 
