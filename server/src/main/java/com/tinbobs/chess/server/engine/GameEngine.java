@@ -15,7 +15,6 @@ import com.tinbobs.chess.server.service.evaluator.Evaluator;
 import com.tinbobs.chess.server.service.statusCreator.CreateFrontendStatus;
 import com.tinbobs.chess.server.service.parser.MoveParser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.*;
@@ -37,7 +36,6 @@ public final class GameEngine implements Engine_API {
     private CreateFrontendStatus statusCreator;
 
     @Autowired
-    @Qualifier("minimax")
     private Evaluator evaluator;
 
     @Autowired
