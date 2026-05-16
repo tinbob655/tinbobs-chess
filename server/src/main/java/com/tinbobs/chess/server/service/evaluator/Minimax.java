@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public final class Minimax implements Evaluator {
 
 
-    private static final int MINIMAX_DEPTH = 4;
+    private static final int MINIMAX_DEPTH = 3;
 
     //transposition table stuff
     private final Map<Long, TTRow> transpositionTable = new HashMap<>();
