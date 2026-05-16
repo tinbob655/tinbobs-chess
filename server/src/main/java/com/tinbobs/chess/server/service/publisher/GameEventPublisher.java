@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 @Service
 public final class GameEventPublisher {
 
+    private final SimpMessagingTemplate messagingTemplate;
+
     //routes for sending information to the frontend
     private static final String TOPIC_GAME = "/topic/game";
     private static final String TOPIC_STATUS = "/topic/status";
@@ -21,8 +23,11 @@ public final class GameEventPublisher {
     private static final String TOPIC_MOVE_RESULT = "/topic/moveResult";
     private static final String TOPIC_VALID_MOVE_TARGETS = "/topic/validMoveTargets";
 
+
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    public GameEventPublisher(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
 
     //we can publish a series of events without caring how using overloading
     public void publish(RawMove move) {
