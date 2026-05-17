@@ -22,6 +22,9 @@ public final class Bot extends Player {
 
     @NonNull
     public Move turn(GameState state) {
-        return this.evaluator.bestMove(state, this.getColour());
+        System.out.println("Bot is thinking...");
+        Move move = this.evaluator.bestMove(state, this.getColour());
+        System.out.println("Bot decided on move: " + move);
+        return move;
     }
 }
