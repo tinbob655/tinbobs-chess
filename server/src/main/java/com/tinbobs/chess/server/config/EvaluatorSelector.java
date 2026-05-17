@@ -15,7 +15,7 @@ public class EvaluatorSelector {
 
     private static final boolean USE_RANDOM_EVALUATION = false;
 
-    @Bean
+    @Bean(destroyMethod = "shutdown")
     public Evaluator getEvaluator() {
         return switch (this.deduceEvaluator()) {
             case RANDOM -> new RandomEV();

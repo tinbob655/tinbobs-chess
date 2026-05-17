@@ -8,6 +8,7 @@ import com.tinbobs.chess.server.model.status.Status;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public final class Minimax implements Evaluator {
@@ -16,13 +17,32 @@ public final class Minimax implements Evaluator {
     private static final int MINIMAX_DEPTH = 4;
 
     //transposition table stuff
-    private final Map<Long, TTRow> transpositionTable = new HashMap<>();
+    private final Map<Long, TTRow> transpositionTable = new ConcurrentHashMap<>();
     private enum TTFlag {PERFECT, MAXIMUM, MINIMUM}
-    private record TTRow(int score, int depth, TTFlag flag) {}
+    private record TTRow(int score, int depth, TTFlag flag, Move bestMove) {}
+
+    //killer moves stuff
+    private static final int KILLER_SLOTS = 2;
+    private final Move[][] killerMoves = new Move[MINIMAX_DEPTH + 10][KILLER_SLOTS];
+
+    //parallelism stuff
+    private final ExecutorService threadPool;
+    private final int cpuCount;
+
+    //create a thread pool
+    public Minimax() {
+        this.cpuCount = Math.max(1, Runtime.getRuntime().availableProcessors());
+        this.threadPool = Executors.newFixedThreadPool(cpuCount);
+    }
+
+    //kill the thread pool on shutdown
+    public void shutdown() {
+        this.threadPool.shutdownNow();
+    }
 
     @Override
     public int evaluate(GameState state, Colour perspective) {
-        return this.minimax(state, MINIMAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, perspective);
+        return this.minimax(state, MINIMAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE, perspective, 0);
     }
 
     //gives a state a score from a player's perspective
@@ -65,49 +85,58 @@ public final class Minimax implements Evaluator {
     //gets moves in order of predicted best to worst
     @Override
     public @NonNull Queue<Move> getSortedMoves(GameState state) {
-
-        Comparator<Move> moveComparator = Comparator.comparingInt((Move move) -> {
-
-            int score = 0;
-            Optional<Piece> victim = state.board().getPieceAt(move.to());
-            Optional<Piece> attacker = state.board().getPieceAt(move.from());
-
-            if (victim.isPresent() && attacker.isPresent()) {
-                score += (victim.get().getValue() * 100) - attacker.get().getValue();
-            }
-            return score;
-
-        }).reversed();
-
-        Queue<Move> sortedMoves = new PriorityQueue<>(moveComparator);
-        Set<Move> legalMoves = state.getLegalMoves();
-        sortedMoves.addAll(legalMoves);
-        return sortedMoves;
+        return this.getSortedMovesWithTranspositionTable(state, null, null);
     }
 
     //transposition table will be cleared on a reset
     @Override
     public void reset() {
         transpositionTable.clear();
+
+        //reset the killer moves
+        for (Move[] slot : killerMoves) {
+            Arrays.fill(slot, null);
+        }
     }
 
     @Override
     @NonNull
     public Move bestMove(GameState state, Colour perspective) {
 
-        //get the moves
-        Queue<Move> sortedMoves = getSortedMoves(state);
-        Move bestMove = sortedMoves.peek();
+        // Helper threads seed the TT at a shallower depth
+        List<Future<?>> helpers = new ArrayList<>();
+        for (int t = 0; t < this.cpuCount - 1; t++) {
+            helpers.add(this.threadPool.submit(() -> {
+                try {
+                    this.searchAtDepth(state, perspective, MINIMAX_DEPTH - 1);
+                }
+                catch (Exception ignored) {}
+            }));
+        }
 
-        //do minimax
+        // Main thread does the authoritative search
+        Move result = this.searchAtDepth(state, perspective, MINIMAX_DEPTH);
+        helpers.forEach(f -> f.cancel(true));
+        return result;
+    }
+
+    private @NonNull Move searchAtDepth(GameState state, Colour perspective, int depth) {
+
+        //check the transposition table for a precomputed move
+        long key = state.getZorbristHash() ^ (perspective == Colour.WHITE ? 0xDEADBEEFL : 0xCAFEBABEL);
+        TTRow cached = transpositionTable.get(key);
+        Move ttMove = (cached != null) ? cached.bestMove() : null;
+
+        //setup for minimax
+        Queue<Move> sortedMoves = getSortedMovesWithTranspositionTable(state, ttMove, null);
+        Move bestMove = sortedMoves.peek();
         int alpha = Integer.MIN_VALUE;
         int beta  = Integer.MAX_VALUE;
+
+        //do minimax on each move
         while (!sortedMoves.isEmpty()) {
-
             Move move = sortedMoves.poll();
-            GameState next = state.advance(move);
-            int score = minimax(next, MINIMAX_DEPTH - 1, alpha, beta, perspective);
-
+            int score = minimax(state.advance(move), depth - 1, alpha, beta, perspective, 1);
             if (score > alpha) {
                 alpha = score;
                 bestMove = move;
@@ -119,7 +148,7 @@ public final class Minimax implements Evaluator {
     }
 
     //evaluates state upto a depth
-    public int minimax(GameState state, int depth, int alpha, int beta, Colour perspective) {
+    public int minimax(GameState state, int depth, int alpha, int beta, Colour perspective, int ply) {
 
 
         //we might be done
@@ -135,6 +164,7 @@ public final class Minimax implements Evaluator {
         //we may have seen this state before at a sufficient depth
         long key = state.getZorbristHash() ^ (perspective == Colour.WHITE ? 0xDEADBEEFL : 0xCAFEBABEL);
         TTRow cached = transpositionTable.get(key);
+        Move ttMove = (cached != null) ? cached.bestMove() : null;
         if (cached != null && cached.depth() >= depth) {
 
             switch (cached.flag()) {
@@ -150,8 +180,10 @@ public final class Minimax implements Evaluator {
         }
 
         //if we are not done then do another layer of recursion
-        Queue<Move> availableMoves = getSortedMoves(state);
+        Move[] killers = (ply < killerMoves.length) ? killerMoves[ply] : null;
+        Queue<Move> availableMoves = this.getSortedMovesWithTranspositionTable(state, ttMove, killers);
         int res;
+        Move bestMove = availableMoves.peek();
 
         if (state.currentTurn().getColour() == perspective) {
 
@@ -161,14 +193,18 @@ public final class Minimax implements Evaluator {
                 Move move = availableMoves.poll();
 
                 GameState nextState = state.advance(move);
-                int nextScore = this.minimax(nextState, depth - 1, alpha, beta, perspective);
+                int nextScore = this.minimax(nextState, depth - 1, alpha, beta, perspective, ply + 1);
 
                 //if we found the next best thing
                 alpha = Math.max(alpha, nextScore);
-                res = Math.max(res, nextScore);
+                if (nextScore > res) {
+                    res = nextScore;
+                    bestMove = move;
+                }
 
                 //might be able to prune this branch
                 if (beta <= alpha) {
+                    this.updateKillers(move, ply);
                     break;
                 }
             }
@@ -181,14 +217,18 @@ public final class Minimax implements Evaluator {
                 Move move = availableMoves.poll();
 
                 GameState nextState = state.advance(move);
-                int nextScore = this.minimax(nextState, depth -1, alpha, beta, perspective);
+                int nextScore = this.minimax(nextState, depth -1, alpha, beta, perspective, ply + 1);
 
                 //if we found the next worst thing
                 beta = Math.min(beta, nextScore);
-                res = Math.min(res, nextScore);
+                if (nextScore < res) {
+                    res = nextScore;
+                    bestMove = move;
+                }
 
                 //we might be able to prune this branch
                 if (beta <= alpha) {
+                    this.updateKillers(move, ply);
                     break;
                 }
             }
@@ -199,9 +239,39 @@ public final class Minimax implements Evaluator {
         if (res <= originalAlpha) flag = TTFlag.MAXIMUM;
         else if (res >= beta) flag = TTFlag.MINIMUM;
         else flag = TTFlag.PERFECT;
-        transpositionTable.put(key, new TTRow(res, depth, flag));
+        transpositionTable.put(key, new TTRow(res, depth, flag, bestMove));
 
         return res;
+    }
+
+    @NonNull
+    private Queue<Move> getSortedMovesWithTranspositionTable(GameState state, Move ttMove, Move[] killers) {
+        Comparator<Move> moveComparator = Comparator.comparingInt((Move move) -> {
+
+            //we may have already computed the move
+            if (move.equals(ttMove)) return 10_000;
+
+            int score = 0;
+            Optional<Piece> victim = state.board().getPieceAt(move.to());
+            Optional<Piece> attacker = state.board().getPieceAt(move.from());
+
+            if (victim.isPresent() && attacker.isPresent()) {
+                score += (victim.get().getValue() * 100) - attacker.get().getValue();
+            }
+
+            //the move may be a killer
+            if (killers != null) {
+                if (move.equals(killers[0])) return 900;
+                if (move.equals(killers[1])) return 800;
+            }
+
+            return score;
+
+        }).reversed();
+
+        Queue<Move> sortedMoves = new PriorityQueue<>(moveComparator);
+        sortedMoves.addAll(state.getLegalMoves());
+        return sortedMoves;
     }
 
     //keeps evaluating states until all pieces are safe
@@ -260,5 +330,13 @@ public final class Minimax implements Evaluator {
         int col = index % 8;
         int row = index / 8;
         return (7 - row) * 8 + col;
+    }
+
+    //keeps out killer moves up to date on beta cutoff
+    private void updateKillers(Move move, int ply) {
+        if (ply < killerMoves.length && !move.equals(killerMoves[ply][0])) {
+            killerMoves[ply][1] = killerMoves[ply][0];
+            killerMoves[ply][0] = move;
+        }
     }
 }

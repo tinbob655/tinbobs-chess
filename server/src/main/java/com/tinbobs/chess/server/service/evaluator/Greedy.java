@@ -63,6 +63,9 @@ public final class Greedy implements Evaluator {
     }
 
     @Override
+    public void shutdown() {}
+
+    @Override
     @NonNull
     public Move bestMove(GameState state, Colour perspective) {
 

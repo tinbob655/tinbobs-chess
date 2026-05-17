@@ -13,5 +13,7 @@ public interface Evaluator {
     int staticEvaluate(GameState state, Colour perspective);
     @NonNull Move bestMove(GameState state, Colour perspective);
     @NonNull Queue<Move> getSortedMoves(GameState state);
+
     void reset();
+    void shutdown();
 }
