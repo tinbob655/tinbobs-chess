@@ -38,8 +38,8 @@ public final class BlunderDetectorService implements BlunderDetector {
         //give a score to the state before and after the move
         int scoreBeforeMove;
         int scoreAfterMove;
-        scoreBeforeMove = this.evaluator.evaluate(stateBeforeMove, currentPlayer.getColour());
-        scoreAfterMove = this.evaluator.evaluate(stateAfterMove, currentPlayer.getColour());
+        scoreBeforeMove = this.evaluator.staticEvaluate(stateBeforeMove, currentPlayer.getColour());
+        scoreAfterMove = this.evaluator.staticEvaluate(stateAfterMove, currentPlayer.getColour());
 
         //if a position was already winning or loosing then don't punish twice
         if (Math.abs(scoreBeforeMove) > DECISIVE_POSITION_THRESHOLD) {
