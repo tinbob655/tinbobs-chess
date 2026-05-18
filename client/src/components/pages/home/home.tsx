@@ -24,7 +24,7 @@ export default function Home():React.ReactElement {
     const [validMoveTargets, setValidMoveTargets] = useState<number[]>([]);
     const [gameOverMessage, setGameOverMessage] = useState<string>('');
 
-    const statusMessage = getStatusMessage(status.gameStatus, waitingForBotMove)
+    const statusMessage = getStatusMessage(status.gameStatus);
 
     //when we are connected, start the game
     useEffect(() => {
@@ -235,9 +235,9 @@ export default function Home():React.ReactElement {
     }
 };
 
-function getStatusMessage(gameStatus: gameStatus, waitingForBotMove: boolean): string {
+function getStatusMessage(gameStatus: gameStatus): string {
     switch (gameStatus) {
-        case 'CHECK': return !waitingForBotMove ? "You put the bot's king in check!" : "The bot has put your king in check!";
+        case 'CHECK': return "The king is in check!";
         default: return '';
     }
 }
