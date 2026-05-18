@@ -40,13 +40,12 @@ public final class Greedy implements Evaluator {
     }
 
     @Override
-    public @NonNull Queue<Move> getSortedMoves(GameState state) {
+    public @NonNull Queue<Move> getSortedMoves(GameState state, Colour perspective) {
 
         //compare moves based on static evaluation
         Comparator<Move> moveComparator = Comparator.comparingInt((Move move) -> {
 
             //pretend we did the move
-            Colour perspective = state.currentTurn().getColour();
             GameState newState = state.advance(move);
             return this.staticEvaluate(newState, perspective);
         }).reversed();

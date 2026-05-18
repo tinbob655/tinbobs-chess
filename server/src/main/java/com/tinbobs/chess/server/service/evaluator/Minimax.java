@@ -84,7 +84,7 @@ public final class Minimax implements Evaluator {
 
     //gets moves in order of predicted best to worst
     @Override
-    public @NonNull Queue<Move> getSortedMoves(GameState state) {
+    public @NonNull Queue<Move> getSortedMoves(GameState state, Colour perspective) {
         return this.getSortedMovesWithTranspositionTable(state, null, null);
     }
 

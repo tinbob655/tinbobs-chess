@@ -23,7 +23,7 @@ public final class RandomEV implements Evaluator {
     }
 
     @Override
-    public @NonNull Queue<Move> getSortedMoves(GameState state) {
+    public @NonNull Queue<Move> getSortedMoves(GameState state, Colour perspective) {
 
         //return the moves in a random order
         List<Move> allMoves = new java.util.ArrayList<>(state.getLegalMoves().stream().toList());
