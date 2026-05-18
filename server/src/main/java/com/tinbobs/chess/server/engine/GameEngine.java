@@ -10,7 +10,6 @@ import com.tinbobs.chess.server.model.player.Player;
 import com.tinbobs.chess.server.model.state.GameState;
 import com.tinbobs.chess.server.model.state.Move;
 import com.tinbobs.chess.server.model.status.GameStatus;
-import com.tinbobs.chess.server.service.blunderDetector.BlunderDetector;
 import com.tinbobs.chess.server.service.evaluator.Evaluator;
 import com.tinbobs.chess.server.service.publisher.GameEventPublisher;
 import com.tinbobs.chess.server.service.statusCreator.CreateFrontendStatus;
@@ -27,15 +26,13 @@ public final class GameEngine implements Engine_API {
 
     private final MoveParser moveParser;
     private final CreateFrontendStatus statusCreator;
-    private final BlunderDetector blunderDetector;
     private final GameEventPublisher publisher;
     private final Evaluator evaluator;
 
 
-    public GameEngine(MoveParser moveParser, CreateFrontendStatus statusCreator, BlunderDetector blunderDetector, GameEventPublisher publisher, Evaluator evaluator) {
+    public GameEngine(MoveParser moveParser, CreateFrontendStatus statusCreator, GameEventPublisher publisher, Evaluator evaluator) {
         this.moveParser = moveParser;
         this.statusCreator = statusCreator;
-        this.blunderDetector = blunderDetector;
         this.publisher = publisher;
         this.evaluator = evaluator;
     }
@@ -119,15 +116,8 @@ public final class GameEngine implements Engine_API {
         Optional<Piece> targetPiece = this.state.board().getPieceAt(move.to());
 
         //do the move
-        GameState oldState = this.state;
         this.state = this.state.advance(move);
         this.publisher.publish(this.moveParser.encode(move));
-
-        //deal with blunders
-        boolean isBlunder = this.blunderDetector.checkForBlunder(currentPlayer, oldState, this.state);
-        if (isBlunder) {
-            currentPlayer.addBlunder();
-        }
 
         //the move may have been a capture move
         //take it from the next player's pieces and add it to the current player's captured pieces

@@ -34,12 +34,10 @@ export function useChessSocket():socketInfo {
         gameStatus: 'ONGOING',
         human: {
             material: 0,
-            blunderCount: 0,
             capturedPieces: [],
         },
         bot: {
             material: 0,
-            blunderCount: 0,
             capturedPieces: [],
         },
     });

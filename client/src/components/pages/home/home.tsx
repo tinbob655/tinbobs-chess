@@ -98,7 +98,6 @@ export default function Home():React.ReactElement {
                                                 </p>
                                                 <PlayerInfo
                                                     material={status.human.material || 39}
-                                                    blunderCount={status.human.blunderCount || 0}
                                                     capturedPieces={status.human.capturedPieces || []}
                                                 />
                                             </td>
@@ -110,7 +109,6 @@ export default function Home():React.ReactElement {
                                                 </p>
                                                 <PlayerInfo
                                                     material={status.bot.material || 39}
-                                                    blunderCount={status.bot.blunderCount || 0}
                                                     capturedPieces={status.bot.capturedPieces || []}
                                                 />
                                             </td>

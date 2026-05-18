@@ -7,7 +7,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
-public class DeliberatelyLoose implements Evaluator {
+public final class DeliberatelyLoose implements Evaluator {
 
     private static final Greedy greedy = new Greedy();
 

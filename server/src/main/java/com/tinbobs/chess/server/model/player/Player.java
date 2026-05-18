@@ -15,13 +15,11 @@ public abstract class Player {
     private final Colour colour;
     private final List<Piece> capturedPieces = new LinkedList<>();
     private int material;
-    private int blunders;
 
     public Player(String name, Colour colour) {
         this.name = name;
         this.colour = colour;
         this.material = 39;
-        this.blunders = 0;
     }
 
     public String getName() {
@@ -32,9 +30,6 @@ public abstract class Player {
     }
     public int getMaterial() {
         return this.material;
-    }
-    public int getBlunders() {
-        return this.blunders;
     }
     public List<Piece> getCapturedPieces() {
         return this.capturedPieces;
@@ -54,16 +49,12 @@ public abstract class Player {
 
         this.capturedPieces.add(piece);
     }
-    public void addBlunder() {
-        this.blunders++;
-    }
     public void promotion() {
         this.material += 8;
     }
 
     public void reset() {
         this.material = 39;
-        this.blunders = 0;
         this.capturedPieces.clear();
     }
 

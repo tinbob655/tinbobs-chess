@@ -8,7 +8,6 @@ export interface status {
 
 export interface playerStats {
     material: number;
-    blunderCount: number;
     capturedPieces: Piece[];
 }
 
