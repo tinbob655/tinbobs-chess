@@ -1,5 +1,6 @@
 package com.tinbobs.chess.server.service.evaluator;
 
+import com.tinbobs.chess.server.model.board.Position;
 import com.tinbobs.chess.server.model.piece.Colour;
 import com.tinbobs.chess.server.model.piece.Piece;
 import com.tinbobs.chess.server.model.state.GameState;
@@ -55,29 +56,35 @@ public final class Minimax implements Evaluator {
         }
 
         int res = 0;
+        int whiteMobility = 0;
+        int blackMobility = 0;
         List<Optional<Piece>> grid = state.board().getGrid();
 
         for (int i = 0; i < 64; i++) {
 
-            if (grid.get(i).isEmpty()) continue;
-            Piece piece = grid.get(i).get();
+            //get the piece at the index
+            Position pos = new Position(i);
+            Optional<Piece> maybePiece = state.board().getPieceAt(pos);
+            if (maybePiece.isEmpty()) continue;
 
-            //our piece: add. Opponent's piece: subtract
-            int sign = piece.getColour() == perspective ? 1 : -1;
-            int material = piece.getValue() * 100;
+            Piece piece = maybePiece.get();
+            int moveCount = piece.getLegalMoves(pos, state.board()).size();
 
-            //tables are written from white's POV so need to flip if we are black
-            boolean pieceIsWhite = piece.getColour() == Colour.WHITE;
-            boolean perspectiveIsWhite = perspective == Colour.WHITE;
-            int tableIndex = (pieceIsWhite == perspectiveIsWhite) ? i : mirror(i);
-            int positional = piece.getPieceTable()[tableIndex];
-
-            res += sign * (material + positional);
+            //reward / punish mobility
+            if (piece.getColour() == Colour.WHITE) {
+                whiteMobility += moveCount;
+            }
+            else {
+                blackMobility += moveCount;
+            }
         }
 
         //a piece with more available moves is in a better position
-        int mobilityBonus = state.currentTurn().getColour() == perspective ? 5 : -5;
-        res += mobilityBonus * state.getLegalMoves().size();
+        int mobility = perspective == Colour.WHITE
+                ? whiteMobility - blackMobility
+                : blackMobility - whiteMobility;
+
+        res += 5 * mobility;
 
         return res;
     }
@@ -323,13 +330,6 @@ public final class Minimax implements Evaluator {
             }
         }
         return res;
-    }
-
-    //helper to flip a table
-    private int mirror(int index) {
-        int col = index % 8;
-        int row = index / 8;
-        return (7 - row) * 8 + col;
     }
 
     //keeps out killer moves up to date on beta cutoff
