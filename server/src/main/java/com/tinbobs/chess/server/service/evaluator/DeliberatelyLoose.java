@@ -25,13 +25,35 @@ public class DeliberatelyLoose implements Evaluator {
     @Override
     public @NonNull Move bestMove(GameState state, Colour perspective) {
 
-        //find the worst move
         Set<Move> legalMoves = state.getLegalMoves();
         Move worstMove = null;
         int worstScore = Integer.MAX_VALUE;
 
         for (Move move : legalMoves) {
-            int score = -this.staticEvaluate(state.advance(move), perspective);
+
+            GameState newState = state.advance(move);
+            Set<Move> opponentMoves = newState.getLegalMoves();
+            int score;
+
+            //probably won't happen
+            if (opponentMoves.isEmpty()) {
+                score = greedy.staticEvaluate(newState, perspective);
+            }
+
+            else {
+
+                //simulate an opponent move
+                int bestOpponentScore = Integer.MIN_VALUE;
+                Colour opponentColour = newState.currentTurn().getColour();
+
+                for (Move opponentMove : opponentMoves) {
+                    int s = greedy.staticEvaluate(newState.advance(opponentMove), opponentColour);
+                    if (s > bestOpponentScore) {
+                        bestOpponentScore = s;
+                    }
+                }
+                score = -bestOpponentScore;
+            }
 
             if (score < worstScore) {
                 worstScore = score;
