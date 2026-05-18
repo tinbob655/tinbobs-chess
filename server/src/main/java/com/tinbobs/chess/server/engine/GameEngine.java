@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 public final class GameEngine implements Engine_API {
 
-    private GameState state;
+    private volatile GameState state;
     private final List<Player> players = new ArrayList<>();
 
     private final MoveParser moveParser;
@@ -101,7 +101,7 @@ public final class GameEngine implements Engine_API {
     }
 
     @Override
-    public void turn() {
+    public synchronized void turn() {
 
         //get a move
         Player currentPlayer = this.state.currentTurn();
